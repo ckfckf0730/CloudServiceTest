@@ -1,0 +1,16 @@
+﻿@model string
+
+<html>
+<head>
+    <title>消息发送示例</title>
+</head>
+<body>
+    <h1>发送消息</h1>
+    <form method="post" asp-action="SubmitMessage">
+        <input type="text" name="message" />
+        <button type="submit">发送</button>
+    </form>
+
+    <button onclick="location.href='@Url.Action("Upload", "Home")'">Go to Upload Page</button>
+</body>
+</html>
