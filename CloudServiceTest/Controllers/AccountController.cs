@@ -32,13 +32,18 @@ namespace CloudServiceTest.Controllers
                 if (result.Succeeded)
                 {
                     await _signInManager.SignInAsync(user, isPersistent: false);
-                    return RedirectToAction("Index", "Home");
+                    var successModel = new RegisterResultViewModel { Message = "注册成功！" };
+                    return View("RegisterResultViewModel", successModel);//RedirectToAction("Index", "Home");
                 }
 
+                var faultModel = new RegisterResultViewModel { Message = "注册失败！" };
                 foreach (var error in result.Errors)
                 {
                     ModelState.AddModelError(string.Empty, error.Description);
+                    faultModel.Message += "\n" + error.Description;
                 }
+
+                return View("RegisterResultViewModel", faultModel);
             }
 
             return View(model);

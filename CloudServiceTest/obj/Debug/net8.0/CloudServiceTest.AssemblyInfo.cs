@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("CloudServiceTest")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+03115a0d321c4c19b10a598a889ea4451b00e9e0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b31f9f9b9f63471936c31961933a83c4552e43b9")]
 [assembly: System.Reflection.AssemblyProductAttribute("CloudServiceTest")]
 [assembly: System.Reflection.AssemblyTitleAttribute("CloudServiceTest")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

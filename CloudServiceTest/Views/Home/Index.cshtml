@@ -2,17 +2,16 @@
 
 <html>
 <head>
-    <title>消息发送示例</title>
+    <title>Index</title>
 </head>
 <body>
-    <h1>发送消息</h1>
+    <h1>Send Message</h1>
     <form method="post" asp-action="SubmitMessage">
         <input type="text" name="message" />
-        <button type="submit">发送</button>
+        <button type="submit">Send</button>
     </form>
 
     <button onclick="location.href='@Url.Action("Upload", "Home")'">Go to Upload Page</button>
-    <button onclick="location.href='@Url.Action("Register", "Account")'">Go to Register Page</button>
-    <button onclick="location.href='@Url.Action("Login", "Account")'">Go to Login Page</button>
+    
 </body>
 </html>

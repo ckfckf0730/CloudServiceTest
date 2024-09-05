@@ -7,4 +7,10 @@ namespace CloudServiceTest.Models
     {
         // 在这里可以添加更多自定义的用户属性
     }
+
+	public class RegisterResultViewModel
+	{
+		public string Message { get; set; }
+	}
+
 }
