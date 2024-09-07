@@ -5,14 +5,13 @@
     <title>Index</title>
 </head>
 <body>
-    <h1>Send Message</h1>
-    <form method="post" asp-action="SubmitMessage">
-        <input type="text" name="message" />
-        <button type="submit">Send</button>
-    </form>
+    <h1>Welcome to my Azure picture storage site!</h1>
 
-    <button onclick="location.href='@Url.Action("Upload", "Home")'">Go to Upload Page</button>
-
+    <br />
+    <br />
+    <button onclick="location.href='@Url.Action("Upload", "Azure")'">Upload Page</button>
+    <br />
+    <button onclick="location.href='@Url.Action("PictureList", "Azure")'">Uploaded List</button>
     
 </body>
 </html>

@@ -30,16 +30,20 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWNjb3VudFxSZWdpc3RlclJlc3VsdFZpZXdNb2RlbC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
+[D:/Projects/CloudServiceTest/CloudServiceTest/Views/Azure/PictureList.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQXp1cmVcUGljdHVyZUxpc3QuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Projects/CloudServiceTest/CloudServiceTest/Views/Azure/Upload.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQXp1cmVcVXBsb2FkLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
 [D:/Projects/CloudServiceTest/CloudServiceTest/Views/Home/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxJbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
 [D:/Projects/CloudServiceTest/CloudServiceTest/Views/Home/Privacy.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxQcml2YWN5LmNzaHRtbA==
-build_metadata.AdditionalFiles.CssScope = 
-
-[D:/Projects/CloudServiceTest/CloudServiceTest/Views/Home/Upload.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxVcGxvYWQuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
 [D:/Projects/CloudServiceTest/CloudServiceTest/Views/Shared/CommonResult.cshtml]

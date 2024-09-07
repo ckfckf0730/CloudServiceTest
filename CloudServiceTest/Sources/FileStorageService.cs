@@ -1,4 +1,6 @@
-﻿using Azure.Storage.Files.Shares;
+﻿using Azure;
+using Azure.Storage.Files.Shares;
+using Azure.Storage.Files.Shares.Models;
 using Microsoft.Extensions.Configuration;
 
 namespace CloudServiceTest
@@ -12,7 +14,7 @@ namespace CloudServiceTest
             _configuration = configuration;
         }
 
-        public async Task UploadFileAsync(string shareName, string filePath, Stream fileStream)
+        public async Task<Response<ShareFileUploadInfo>> UploadFileAsync(string shareName, string filePath, Stream fileStream)
         {
             // 读取连接字符串
             string connectionString = _configuration["AzureStorage:ConnectionString"];
@@ -31,7 +33,7 @@ namespace CloudServiceTest
 
             // 上传文件
             await fileClient.CreateAsync(fileStream.Length);
-            await fileClient.UploadRangeAsync(
+            return await fileClient.UploadRangeAsync(
                 new Azure.HttpRange(0, fileStream.Length),
                 fileStream
             );

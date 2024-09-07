@@ -1,0 +1,8 @@
+﻿@model List<string>
+
+<h2>All your uploaded pictures</h2>
+
+@foreach (var fileName in Model)
+{
+    <p>@fileName</p>
+}

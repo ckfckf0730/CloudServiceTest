@@ -8,12 +8,7 @@ public class HomeController : Controller
         return View();
     }
 
-    public IActionResult Upload()
-    {
-        return View();
-    }
-
-    public IActionResult Privacy    ()
+    public IActionResult Privacy()
     {
         return View();
     }

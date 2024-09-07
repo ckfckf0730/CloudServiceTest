@@ -29,5 +29,10 @@ namespace CloudServiceTest
             await _dbContext.FileRecords.AddAsync(record);
             await _dbContext.SaveChangesAsync();
         }
+
+        public List<FileRecord> LoadFileRecord(string userName)
+        {
+            return _dbContext.FileRecords.Where(fr => fr.UploadedBy == userName).ToList();
+        }
     }
 }
