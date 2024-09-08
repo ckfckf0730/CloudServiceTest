@@ -4,6 +4,8 @@ using CloudServiceTest.Models.Database;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.Identity.Client.Extensions.Msal;
 using static System.Formats.Asn1.AsnWriter;
 
 namespace CloudServiceTest
@@ -17,10 +19,15 @@ namespace CloudServiceTest
             _dbContext = dbContext;
         }
 
-        public void SaveFileRecord(FileRecord record)
+        public Task<IDbContextTransaction> GetTransactionAsync()
+        {
+            return _dbContext.Database.BeginTransactionAsync();
+        }
+
+        public int SaveFileRecord(FileRecord record)
         {
             _dbContext.FileRecords.Add(record);
-            _dbContext.SaveChanges();
+            return _dbContext.SaveChanges();
             //var test = _dbContext.FileRecords.FirstOrDefault(fr => fr.Id == record.Id);
         }
 
@@ -32,7 +39,7 @@ namespace CloudServiceTest
 
         public List<FileRecord> LoadFileRecord(string userName)
         {
-            return _dbContext.FileRecords.Where(fr => fr.UploadedBy == userName).ToList();
+            return _dbContext.FileRecords   .Where(fr => fr.UploadedBy == userName).ToList();
         }
     }
 }

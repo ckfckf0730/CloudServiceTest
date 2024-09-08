@@ -9,6 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 
 builder.Services.AddSingleton<CloudServiceTest.FileStorageService>();
+builder.Services.AddSingleton<CloudServiceTest.ImageService>();
 builder.Services.AddScoped<CloudServiceTest.DatabaseService>();
 
 // add database connection

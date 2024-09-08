@@ -8,8 +8,22 @@ public class AzureController : Controller
 {
     private readonly FileStorageService _fileStorageService;
     private readonly DatabaseService _databaseService;
+    private readonly ImageService _imageService;
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly UserManager<ApplicationUser> _userManager;
+
+    private readonly string _azureShareFolder = "sharedfolders"; 
+
+    public AzureController(FileStorageService fileStorageService, DatabaseService databaseService,
+        ImageService imageService,
+        SignInManager<ApplicationUser> signInManager, UserManager<ApplicationUser> userManager)
+    {
+        _fileStorageService = fileStorageService;
+        _databaseService = databaseService;
+        _imageService = imageService;
+        _signInManager = signInManager;
+        _userManager = userManager;
+    }
 
     public IActionResult Upload()
     {
@@ -23,6 +37,11 @@ public class AzureController : Controller
         {
             var list = _databaseService.LoadFileRecord(userName);
 
+            foreach(var item in list)
+            {
+                DownLoad(item.ThumbnailId.ToString());
+            }
+
             var fileNameList = list.Select(item => item.FileName).ToList();
 
             return View(fileNameList);
@@ -30,6 +49,11 @@ public class AzureController : Controller
 
         var model = new CommonResultModel { Message = "Please Upload Picture after Login！" };
         return View("CommonResult", model);
+    }
+
+    private void DownLoad(string azureName)
+    {
+        var stream = _fileStorageService.DownloadFileAsync(_azureShareFolder, azureName).Result;
     }
 
     private bool IsLogin(out string userName)
@@ -43,16 +67,6 @@ public class AzureController : Controller
         userName = _userManager.GetUserName(User) ?? string.Empty;
         return true;
     }
-
-    public AzureController(FileStorageService fileStorageService, DatabaseService databaseService,
-        SignInManager<ApplicationUser> signInManager, UserManager<ApplicationUser> userManager)
-    {
-        _fileStorageService = fileStorageService;
-        _databaseService = databaseService;
-        _signInManager = signInManager;
-        _userManager = userManager;
-    }
-
 
     [HttpPost]
     public async Task<IActionResult> UploadFile(IFormFile file)
@@ -70,13 +84,14 @@ public class AzureController : Controller
             return View("CommonResult", model);
         }
 
-        if(!IsImage(file))
+        if(!_imageService.IsImage(file))
         {
             var model = new CommonResultModel { Message = "Upload file must be a picture！" };
             return View("CommonResult", model);
         }
 
         var guid = Guid.NewGuid();
+        var thumbnailGuid = Guid.NewGuid();
 
         var newFile = new FileRecord
         {
@@ -84,88 +99,61 @@ public class AzureController : Controller
             FileName = file.FileName,
             FilePath = file.FileName,
             UploadedBy = userName,
-            UploadDate = DateTime.UtcNow
+            UploadDate = DateTime.UtcNow,
+            ThumbnailId = thumbnailGuid
         };
 
-        _databaseService.SaveFileRecord(newFile);
-
-        bool isSuccess = false;
-        using (var stream = file.OpenReadStream())
+        using(var transaction = await _databaseService.GetTransactionAsync())
         {
-            stream.Position = 0;
-            var updateName = newFile.Id.ToString();
-            var result = await _fileStorageService.UploadFileAsync("sharedfolders", updateName, stream);
-            var str = result.GetRawResponse();
-            isSuccess = !str.IsError; 
-        }
-
-        if(isSuccess)
-        {
-            return Content("File uploaded successfully.");
-        }
-        else
-        {
-            return Content("File uploaded faultily.");
-        }
-
-    }
-
-    private readonly List<string> AllowedImageMimeTypes = new List<string>
-    {
-        "image/jpeg",
-        "image/jpg",
-        "image/png",
-        "image/bmp"
-    };
-
-    private bool IsImage(IFormFile file)
-    {
-        if (file == null || file.Length == 0)
-        {
-            return false;
-        }
-
-        // Check MIME type
-        if (!AllowedImageMimeTypes.Contains(file.ContentType.ToLower()))
-        {
-            return false;
-        }
-
-        // Optionally: check file header (magic numbers) for further security
-        using (var stream = file.OpenReadStream())
-        {
+            _databaseService.SaveFileRecord(newFile);
+            bool isSuccess = false;
+            string ErrorMsg = null;
             try
             {
-                byte[] header = new byte[4];
-                stream.Read(header, 0, 4);
-                return IsImageHeader(header);
+                using (var stream = file.OpenReadStream())
+                {
+                    stream.Position = 0;
+                    var updateName = newFile.Id.ToString();
+                    var result = await _fileStorageService.UploadFileAsync(_azureShareFolder, updateName, stream);
+                    var str = result.GetRawResponse();
+                    isSuccess = !str.IsError;
+                    ErrorMsg = str.ReasonPhrase;
+                }
             }
-            catch
+            catch (Exception ex)
             {
-                return false;
+                transaction.RollbackAsync();
+                return Content("File uploaded faultily:" + ex.Message);
+            }
+
+
+            if (isSuccess)
+            {
+                transaction.Commit();
+                UpdateThumbnail(file, newFile.ThumbnailId.ToString());
+                return Content("File uploaded successfully.");
+            }
+            else
+            {
+                transaction.RollbackAsync();
+                return Content("File uploaded faultily:" + ErrorMsg);
             }
         }
     }
 
-    private static bool IsImageHeader(byte[] header)
+    private async Task UpdateThumbnail(IFormFile file, string name)
     {
-        // JPEG
-        if (header[0] == 0xFF && header[1] == 0xD8)
-            return true;
+        var data = _imageService.GenerateThumbnail(file);
+        if(data == null)
+        {
+            return;
+        }
 
-        // PNG
-        if (header[0] == 0x89 && header[1] == 0x50)
-            return true;
-
-        //// GIF
-        //if (header[0] == 0x47 && header[1] == 0x49)
-        //    return true;
-
-        // BMP
-        if (header[0] == 0x42 && header[1] == 0x4D)
-            return true;
-
-        return false;
+        using(var stream = new MemoryStream(data))
+        {
+            var result = await _fileStorageService.UploadFileAsync(_azureShareFolder, name, stream);
+            var str = result.GetRawResponse();
+        }
     }
 }
 

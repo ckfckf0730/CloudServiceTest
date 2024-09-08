@@ -4,7 +4,7 @@
 <form asp-controller="Azure" asp-action="UploadFile" method="post" enctype="multipart/form-data">
     <div>
         <label for="file">Choose a file:</label>
-        <input type="file" id="file" name="file" />
+        <input type="file" id="file" name="file" accept=".jpeg,.jpg,.png,.bmp" />
     </div>
     <div>
         <button type="submit">Upload</button>

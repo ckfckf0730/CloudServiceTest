@@ -7,5 +7,7 @@
         public string FilePath { get; set; }
         public string UploadedBy { get; set; }
         public DateTime UploadDate { get; set; }
+
+        public Guid ThumbnailId { get; set; }
     }
 }
