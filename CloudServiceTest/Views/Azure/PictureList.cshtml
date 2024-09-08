@@ -1,8 +1,9 @@
-﻿@model List<string>
+﻿@model CloudServiceTest.Models.Azure.ThumbnailViewModel 
 
 <h2>All your uploaded pictures</h2>
 
-@foreach (var fileName in Model)
+@foreach (var data in Model.DataList)
 {
-    <p>@fileName</p>
+    <img src="@data.ImageSrc" alt="Image from Azure" style="max-width: 200px; margin: 10px;" />
+    <p>"@data.Name"</p>
 }

@@ -3,6 +3,8 @@ using CloudServiceTest;
 using CloudServiceTest.Models;
 using Microsoft.AspNetCore.Identity;
 using CloudServiceTest.Models.Database;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using CloudServiceTest.Models.Azure;
 
 public class AzureController : Controller
 {
@@ -33,27 +35,52 @@ public class AzureController : Controller
 
     public IActionResult PictureList()
     {
-        if(IsLogin(out var userName))
+        ThumbnailViewModel model = new ThumbnailViewModel();
+        model.DataList = new List<ThumbnailData>();
+
+        if (IsLogin(out var userName))
         {
             var list = _databaseService.LoadFileRecord(userName);
-
             foreach(var item in list)
             {
-                DownLoad(item.ThumbnailId.ToString());
+                var stream = DownLoad(item.ThumbnailId.ToString());
+                if(stream == null)
+                {
+                    continue;
+                }
+                using (var memoryStream = new MemoryStream())
+                {
+                    stream.CopyTo(memoryStream);
+                    var imageBytes = memoryStream.ToArray();
+                    var base64String = Convert.ToBase64String(imageBytes);
+
+                    var fileExtension = Path.GetExtension(item.FileName).ToLower();
+                    string mimeType = fileExtension switch
+                    {
+                        ".jpg" or ".jpeg" => "image/jpeg",
+                        ".png" => "image/png",
+                        ".gif" => "image/gif",
+                        ".bmp" => "image/bmp",
+                        _ => "application/octet-stream"  // 默认 MIME 类型，处理未知的扩展名
+                    };
+
+                    var imageSrc = $"data:{mimeType};base64,{base64String}";
+
+                    ThumbnailData thumb = new ThumbnailData { Name = item.FileName, ImageSrc = imageSrc };
+                    model.DataList.Add(thumb);
+                }
             }
 
-            var fileNameList = list.Select(item => item.FileName).ToList();
-
-            return View(fileNameList);
+            return View(model);
         }
 
-        var model = new CommonResultModel { Message = "Please Upload Picture after Login！" };
-        return View("CommonResult", model);
+        var errorModel = new CommonResultModel { Message = "Please Login！" };
+        return View("CommonResult", errorModel);
     }
 
-    private void DownLoad(string azureName)
+    private Stream? DownLoad(string azureName)
     {
-        var stream = _fileStorageService.DownloadFileAsync(_azureShareFolder, azureName).Result;
+        return _fileStorageService.DownloadFileAsync(_azureShareFolder, azureName).Result;
     }
 
     private bool IsLogin(out string userName)

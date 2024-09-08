@@ -11,7 +11,7 @@
     {
         public string Name { get; set; }
 
-        public Stream Stream { get; set; }
+        public string ImageSrc { get; set; }
     }
 
 
