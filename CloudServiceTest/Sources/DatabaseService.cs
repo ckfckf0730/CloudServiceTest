@@ -41,5 +41,10 @@ namespace CloudServiceTest
         {
             return _dbContext.FileRecords   .Where(fr => fr.UploadedBy == userName).ToList();
         }
+
+        public async Task<FileRecord?> GetFileRecordAsync(Guid guid)
+        {
+            return await _dbContext.FileRecords.FirstOrDefaultAsync(fr => fr.Id == guid);
+        }
     }
 }

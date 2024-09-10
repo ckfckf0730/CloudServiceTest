@@ -12,6 +12,8 @@
         public string Name { get; set; }
 
         public string ImageSrc { get; set; }
+
+        public Guid ResId { get; set; }
     }
 
 

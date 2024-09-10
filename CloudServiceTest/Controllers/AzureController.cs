@@ -43,7 +43,7 @@ public class AzureController : Controller
             var list = _databaseService.LoadFileRecord(userName);
             foreach(var item in list)
             {
-                var stream = DownLoad(item.ThumbnailId.ToString());
+                var stream = DownLoadFromAzure(item.ThumbnailId.ToString());
                 if(stream == null)
                 {
                     continue;
@@ -66,7 +66,8 @@ public class AzureController : Controller
 
                     var imageSrc = $"data:{mimeType};base64,{base64String}";
 
-                    ThumbnailData thumb = new ThumbnailData { Name = item.FileName, ImageSrc = imageSrc };
+                    ThumbnailData thumb = new ThumbnailData { Name = item.FileName, 
+                        ImageSrc = imageSrc , ResId = item.Id};
                     model.DataList.Add(thumb);
                 }
             }
@@ -78,9 +79,28 @@ public class AzureController : Controller
         return View("CommonResult", errorModel);
     }
 
-    private Stream? DownLoad(string azureName)
+    private Stream? DownLoadFromAzure(string azureName)
     {
         return _fileStorageService.DownloadFileAsync(_azureShareFolder, azureName).Result;
+    }
+
+    [HttpGet]
+    public IActionResult DownloadAndSave(Guid guid)
+    {
+        var fileRecord = _databaseService.GetFileRecordAsync(guid).Result;
+
+        var stream = _fileStorageService.DownloadFileAsync(_azureShareFolder, fileRecord.Id.ToString()).Result;
+        var extension = Path.GetExtension(fileRecord.FileName).ToLower();
+        string mimeType = extension switch
+        {
+            ".jpg" or ".jpeg" => "image/jpeg",
+            ".png" => "image/png",
+            ".gif" => "image/gif",
+            ".bmp" => "image/bmp",
+            _ => "application/octet-stream" 
+        };
+
+        return File(stream, mimeType, fileRecord.FileName);
     }
 
     private bool IsLogin(out string userName)

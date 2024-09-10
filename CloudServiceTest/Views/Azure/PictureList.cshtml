@@ -4,6 +4,10 @@
 
 @foreach (var data in Model.DataList)
 {
-    <img src="@data.ImageSrc" alt="Image from Azure" style="max-width: 200px; margin: 10px;" />
-    <p>"@data.Name"</p>
+    <div>
+        <img src="@data.ImageSrc" alt="Image from Azure" style="max-width: 200px; margin: 10px;" />
+        <p>"@data.Name"</p>
+        <a href="/Azure/DownloadAndSave?guid=@data.ResId" class="btn btn-primary">Download File</a>
+    </div>
+
 }
