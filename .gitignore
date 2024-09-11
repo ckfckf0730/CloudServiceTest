@@ -8,3 +8,4 @@
 *.obj
 
 CloudServiceTest/bin/Debug/net8.0/appsettings.Development.json
+CloudServiceTest/appsettings.Development.json
