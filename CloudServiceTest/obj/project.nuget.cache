@@ -1,9 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "fVgsPlazsCU=",
+  "dgSpecHash": "c+NH7SO/4k0=",
   "success": true,
   "projectFilePath": "D:\\Projects\\CloudServiceTest\\CloudServiceTest\\CloudServiceTest.csproj",
   "expectedPackageFiles": [
+    "C:\\Users\\cheng\\.nuget\\packages\\azure.ai.vision.imageanalysis\\1.0.0-beta.3\\azure.ai.vision.imageanalysis.1.0.0-beta.3.nupkg.sha512",
     "C:\\Users\\cheng\\.nuget\\packages\\azure.core\\1.41.0\\azure.core.1.41.0.nupkg.sha512",
     "C:\\Users\\cheng\\.nuget\\packages\\azure.identity\\1.12.0\\azure.identity.1.12.0.nupkg.sha512",
     "C:\\Users\\cheng\\.nuget\\packages\\azure.storage.blobs\\12.21.2\\azure.storage.blobs.12.21.2.nupkg.sha512",

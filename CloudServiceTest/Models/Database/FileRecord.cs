@@ -9,5 +9,7 @@
         public DateTime UploadDate { get; set; }
 
         public Guid ThumbnailId { get; set; }
+
+        public string Tag { get; set; }
     }
 }

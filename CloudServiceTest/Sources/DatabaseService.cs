@@ -24,17 +24,10 @@ namespace CloudServiceTest
             return _dbContext.Database.BeginTransactionAsync();
         }
 
-        public int SaveFileRecord(FileRecord record)
-        {
-            _dbContext.FileRecords.Add(record);
-            return _dbContext.SaveChanges();
-            //var test = _dbContext.FileRecords.FirstOrDefault(fr => fr.Id == record.Id);
-        }
-
-        public async Task SaveFileRecordAsync(FileRecord record)
+        public async Task<int> SaveFileRecordAsync(FileRecord record)
         {
             await _dbContext.FileRecords.AddAsync(record);
-            await _dbContext.SaveChangesAsync();
+            return await _dbContext.SaveChangesAsync();
         }
 
         public List<FileRecord> LoadFileRecord(string userName)

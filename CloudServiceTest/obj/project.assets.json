@@ -2,6 +2,24 @@
   "version": 3,
   "targets": {
     "net8.0": {
+      "Azure.AI.Vision.ImageAnalysis/1.0.0-beta.3": {
+        "type": "package",
+        "dependencies": {
+          "Azure.Core": "1.40.0",
+          "System.ClientModel": "1.0.0",
+          "System.Text.Json": "4.7.2"
+        },
+        "compile": {
+          "lib/netstandard2.0/Azure.AI.Vision.ImageAnalysis.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/netstandard2.0/Azure.AI.Vision.ImageAnalysis.dll": {
+            "related": ".xml"
+          }
+        }
+      },
       "Azure.Core/1.41.0": {
         "type": "package",
         "dependencies": {
@@ -1679,6 +1697,22 @@
     }
   },
   "libraries": {
+    "Azure.AI.Vision.ImageAnalysis/1.0.0-beta.3": {
+      "sha512": "XO89ImSMa9Y+UoPSxepYJdbOEU/wP/jwQ0ELDXMH/qqgXbZ1NswUADxxqQidX0FB6EgZNp1tr74xI+jRlsMCWw==",
+      "type": "package",
+      "path": "azure.ai.vision.imageanalysis/1.0.0-beta.3",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "CHANGELOG.md",
+        "README.md",
+        "azure.ai.vision.imageanalysis.1.0.0-beta.3.nupkg.sha512",
+        "azure.ai.vision.imageanalysis.nuspec",
+        "azureicon.png",
+        "lib/netstandard2.0/Azure.AI.Vision.ImageAnalysis.dll",
+        "lib/netstandard2.0/Azure.AI.Vision.ImageAnalysis.xml"
+      ]
+    },
     "Azure.Core/1.41.0": {
       "sha512": "7OO8rPCVSvXj2IQET3NkRf8hU2ZDCCvCIUhlrE089qkLNpNfWufJnBwHRKLAOWF3bhKBGJS/9hPBgjJ8kupUIg==",
       "type": "package",
@@ -4447,6 +4481,7 @@
   },
   "projectFileDependencyGroups": {
     "net8.0": [
+      "Azure.AI.Vision.ImageAnalysis >= 1.0.0-beta.3",
       "Azure.Identity >= 1.12.0",
       "Azure.Storage.Blobs >= 12.21.2",
       "Azure.Storage.Files.Shares >= 12.19.1",
@@ -4508,6 +4543,10 @@
       "net8.0": {
         "targetAlias": "net8.0",
         "dependencies": {
+          "Azure.AI.Vision.ImageAnalysis": {
+            "target": "Package",
+            "version": "[1.0.0-beta.3, )"
+          },
           "Azure.Identity": {
             "target": "Package",
             "version": "[1.12.0, )"

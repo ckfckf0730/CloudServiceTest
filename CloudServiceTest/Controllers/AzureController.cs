@@ -11,18 +11,20 @@ public class AzureController : Controller
     private readonly FileStorageService _fileStorageService;
     private readonly DatabaseService _databaseService;
     private readonly ImageService _imageService;
+    private readonly ImageAnalysisService _imageAnalysisService;
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly UserManager<ApplicationUser> _userManager;
 
     private readonly string _azureShareFolder = "sharedfolders"; 
 
     public AzureController(FileStorageService fileStorageService, DatabaseService databaseService,
-        ImageService imageService,
+        ImageService imageService, ImageAnalysisService imageAnalysisService,
         SignInManager<ApplicationUser> signInManager, UserManager<ApplicationUser> userManager)
     {
         _fileStorageService = fileStorageService;
         _databaseService = databaseService;
         _imageService = imageService;
+        _imageAnalysisService = imageAnalysisService;
         _signInManager = signInManager;
         _userManager = userManager;
     }
@@ -152,19 +154,25 @@ public class AzureController : Controller
 
         using(var transaction = await _databaseService.GetTransactionAsync())
         {
-            _databaseService.SaveFileRecord(newFile);
             bool isSuccess = false;
             string ErrorMsg = null;
             try
             {
                 using (var stream = file.OpenReadStream())
                 {
-                    stream.Position = 0;
-                    var updateName = newFile.Id.ToString();
-                    var result = await _fileStorageService.UploadFileAsync(_azureShareFolder, updateName, stream);
-                    var str = result.GetRawResponse();
-                    isSuccess = !str.IsError;
-                    ErrorMsg = str.ReasonPhrase;
+                    var tag = await _imageAnalysisService.AnalyzeImageAsync(stream);
+                    newFile.Tag = tag;
+                    var saveResult = await _databaseService.SaveFileRecordAsync(newFile);
+
+                    if(saveResult == 1)
+                    {
+                        stream.Position = 0;
+                        var updateName = newFile.Id.ToString();
+                        var result = await _fileStorageService.UploadFileAsync(_azureShareFolder, updateName, stream);
+                        var str = result.GetRawResponse();
+                        isSuccess = !str.IsError;
+                        ErrorMsg = str.ReasonPhrase;
+                    }
                 }
             }
             catch (Exception ex)
