@@ -14,6 +14,8 @@
         public string ImageSrc { get; set; }
 
         public Guid ResId { get; set; }
+
+        public string Tag { get; set; }
     }
 
 

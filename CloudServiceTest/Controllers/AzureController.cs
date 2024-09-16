@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using CloudServiceTest.Models.Database;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using CloudServiceTest.Models.Azure;
+using Azure;
 
 public class AzureController : Controller
 {
@@ -69,7 +70,7 @@ public class AzureController : Controller
                     var imageSrc = $"data:{mimeType};base64,{base64String}";
 
                     ThumbnailData thumb = new ThumbnailData { Name = item.FileName, 
-                        ImageSrc = imageSrc , ResId = item.Id};
+                        ImageSrc = imageSrc , ResId = item.Id ,Tag = item.Tag};
                     model.DataList.Add(thumb);
                 }
             }
@@ -90,7 +91,6 @@ public class AzureController : Controller
     public IActionResult DownloadAndSave(Guid guid)
     {
         var fileRecord = _databaseService.GetFileRecordAsync(guid).Result;
-
         var stream = _fileStorageService.DownloadFileAsync(_azureShareFolder, fileRecord.Id.ToString()).Result;
         var extension = Path.GetExtension(fileRecord.FileName).ToLower();
         string mimeType = extension switch
@@ -103,6 +103,34 @@ public class AzureController : Controller
         };
 
         return File(stream, mimeType, fileRecord.FileName);
+    }
+
+    [HttpGet]
+    public IActionResult DisplayImage(Guid guid)
+    {
+        var fileRecord = _databaseService.GetFileRecordAsync(guid).Result;
+
+        //var eTag = "\"" + fileRecord.Id.ToString() + "\"";
+        //var incomingETag = Request.Headers["If-None-Match"].FirstOrDefault()?.Trim('"');
+        //if (incomingETag == fileRecord.Id.ToString())
+        //{
+        //    return StatusCode(StatusCodes.Status304NotModified);
+        //}
+
+        var stream = _fileStorageService.DownloadFileAsync(_azureShareFolder, fileRecord.Id.ToString()).Result;
+        var extension = Path.GetExtension(fileRecord.FileName).ToLower();
+        string mimeType = extension switch
+        {
+            ".jpg" or ".jpeg" => "image/jpeg",
+            ".png" => "image/png",
+            ".gif" => "image/gif",
+            ".bmp" => "image/bmp",
+            _ => "application/octet-stream"
+        };
+            
+        //Response.Headers["Cache-Control"] = "public, max-age=3600";
+        //Response.Headers["ETag"] = eTag;
+        return File(stream, mimeType);
     }
 
     private bool IsLogin(out string userName)

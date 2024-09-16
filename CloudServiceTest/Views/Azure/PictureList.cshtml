@@ -2,11 +2,15 @@
 
 <h2>All your uploaded pictures</h2>
 
+
 @foreach (var data in Model.DataList)
 {
-    <div>
-        <img src="@data.ImageSrc" alt="Image from Azure" style="max-width: 200px; margin: 10px;" />
-        <p>"@data.Name"</p>
+    <div style="border: 2px solid black;">
+        <a href="/Azure/DisplayImage?guid=@data.ResId">
+            <img src="@data.ImageSrc" alt="Image from Azure" style="max-width: 200px; margin: 10px;" />
+        </a>
+        <p>@data.Name</p>
+        <p>Tag:@data.Tag</p>
         <a href="/Azure/DownloadAndSave?guid=@data.ResId" class="btn btn-primary">Download File</a>
     </div>
 
