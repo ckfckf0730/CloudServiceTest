@@ -13,19 +13,21 @@ public class AzureController : Controller
     private readonly DatabaseService _databaseService;
     private readonly ImageService _imageService;
     private readonly ImageAnalysisService _imageAnalysisService;
+    private readonly BingSearchService _bingSearchService;
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly UserManager<ApplicationUser> _userManager;
 
     private readonly string _azureShareFolder = "sharedfolders"; 
 
     public AzureController(FileStorageService fileStorageService, DatabaseService databaseService,
-        ImageService imageService, ImageAnalysisService imageAnalysisService,
+        ImageService imageService, ImageAnalysisService imageAnalysisService, BingSearchService bingSearchService,
         SignInManager<ApplicationUser> signInManager, UserManager<ApplicationUser> userManager)
     {
         _fileStorageService = fileStorageService;
         _databaseService = databaseService;
         _imageService = imageService;
         _imageAnalysisService = imageAnalysisService;
+        _bingSearchService = bingSearchService;
         _signInManager = signInManager;
         _userManager = userManager;
     }

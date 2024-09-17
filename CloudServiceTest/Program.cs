@@ -7,10 +7,12 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddHttpClient();
 
 builder.Services.AddSingleton<CloudServiceTest.FileStorageService>();
 builder.Services.AddSingleton<CloudServiceTest.ImageAnalysisService>();
 builder.Services.AddSingleton<CloudServiceTest.ImageService>();
+builder.Services.AddSingleton<CloudServiceTest.BingSearchService>();
 builder.Services.AddScoped<CloudServiceTest.DatabaseService>();
 
 // add database connection

@@ -9,19 +9,18 @@ namespace CloudServiceTest
     public class FileStorageService
     {
         private readonly IConfiguration _configuration;
+        private string _connectionString;
 
         public FileStorageService(IConfiguration configuration)
         {
             _configuration = configuration;
+            _connectionString = _configuration["AzureStorage:ConnectionString"];
         }
 
         public async Task<Response<ShareFileUploadInfo>> UploadFileAsync(string shareName, string filePath, Stream fileStream)
         {
-            // 读取连接字符串
-            string connectionString = _configuration["AzureStorage:ConnectionString"];
-
             // 创建共享文件客户端
-            ShareClient shareClient = new ShareClient(connectionString, shareName);
+            ShareClient shareClient = new ShareClient(_connectionString, shareName);
 
             // 创建文件共享（如果不存在）
             await shareClient.CreateIfNotExistsAsync();
@@ -42,8 +41,7 @@ namespace CloudServiceTest
 
         public async Task<Stream?> DownloadFileAsync(string shareName, string filePath)
         {
-            string connectionString = _configuration["AzureStorage:ConnectionString"];
-            ShareClient shareClient = new ShareClient(connectionString, shareName);
+            ShareClient shareClient = new ShareClient(_connectionString, shareName);
             await shareClient.CreateIfNotExistsAsync();
             ShareDirectoryClient rootDirectory = shareClient.GetRootDirectoryClient();
             ShareFileClient fileClient = rootDirectory.GetFileClient(filePath);
@@ -63,8 +61,7 @@ namespace CloudServiceTest
 
         public async Task<bool> DeleteFileAsync(string shareName, string filePath)
         {
-            string connectionString = _configuration["AzureStorage:ConnectionString"];
-            ShareClient shareClient = new ShareClient(connectionString, shareName);
+            ShareClient shareClient = new ShareClient(_connectionString, shareName);
 
             if(!await shareClient.ExistsAsync())
             {
