@@ -75,7 +75,7 @@ public class AzureController : Controller
                 }
             }
 
-            return View(model);
+            return View("PictureList", model);
         }
 
         var errorModel = new CommonResultModel { Message = "Please Login！" };
@@ -132,6 +132,7 @@ public class AzureController : Controller
         //Response.Headers["ETag"] = eTag;
         return File(stream, mimeType);
     }
+
 
     private bool IsLogin(out string userName)
     {
@@ -222,6 +223,50 @@ public class AzureController : Controller
                 return Content("File uploaded faultily:" + ErrorMsg);
             }
         }
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> DeleteFile(Guid guid)
+    {
+        var record = await _databaseService.GetFileRecordAsync(guid);
+
+        using (var transaction = await _databaseService.GetTransactionAsync())
+        {
+            var num = await _databaseService.DeleteFileRecordAsync(guid);
+            if(num == 1)
+            {
+                try
+                {
+                    await _fileStorageService.DeleteFileAsync(_azureShareFolder, record.ThumbnailId.ToString());
+                    var result = await _fileStorageService.DeleteFileAsync(_azureShareFolder, guid.ToString());
+                    if(!result)
+                    {
+                        transaction.Rollback();
+                        return Content("Delete Azure file Error: " + guid);
+                    }
+                    else
+                    {
+                        transaction.Commit();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    transaction.Rollback();
+                    return Content("File delete faultily: " + ex.Message);
+                }
+            }
+            else if(num ==0)
+            {
+                return Content("File delete faultily. Can't delete datebase row: " + guid);
+            }
+            else
+            {
+                transaction.Rollback();
+                return Content("File delete faultily: Delete more than 1 detabase rows.");
+            }
+        }
+
+        return PictureList();
     }
 
     private async Task UpdateThumbnail(IFormFile file, string name)

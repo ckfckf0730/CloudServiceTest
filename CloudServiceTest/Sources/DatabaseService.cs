@@ -32,12 +32,17 @@ namespace CloudServiceTest
 
         public List<FileRecord> LoadFileRecord(string userName)
         {
-            return _dbContext.FileRecords   .Where(fr => fr.UploadedBy == userName).ToList();
+            return _dbContext.FileRecords.Where(fr => fr.UploadedBy == userName).ToList();
         }
 
         public async Task<FileRecord?> GetFileRecordAsync(Guid guid)
         {
             return await _dbContext.FileRecords.FirstOrDefaultAsync(fr => fr.Id == guid);
+        }
+
+        public async Task<int> DeleteFileRecordAsync(Guid guid)
+        {
+            return await _dbContext.FileRecords.Where(fr => fr.Id == guid).ExecuteDeleteAsync();
         }
     }
 }

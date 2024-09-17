@@ -61,5 +61,29 @@ namespace CloudServiceTest
             return response.Value.Content;
         }
 
+        public async Task<bool> DeleteFileAsync(string shareName, string filePath)
+        {
+            string connectionString = _configuration["AzureStorage:ConnectionString"];
+            ShareClient shareClient = new ShareClient(connectionString, shareName);
+
+            if(!await shareClient.ExistsAsync())
+            {
+                return false;
+            }
+
+            ShareDirectoryClient rootDirectory = shareClient.GetRootDirectoryClient();
+            ShareFileClient fileClient = rootDirectory.GetFileClient(filePath);
+
+            // 上传文件
+            var response = await fileClient.DeleteAsync();
+            if(response.IsError)
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        }
     }
 }
