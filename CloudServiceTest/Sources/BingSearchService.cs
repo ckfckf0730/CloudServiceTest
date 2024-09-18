@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using CloudServiceTest.Models.Azure;
+using System.Text.Json;
 using static System.Net.WebRequestMethods;
 
 namespace CloudServiceTest
@@ -17,7 +18,7 @@ namespace CloudServiceTest
             //_endpoint = configuration["AzureBingSearch:Endpoint"];
         }
 
-        public async Task<string> SearchAsync(string query)
+        public async Task<BingSearchResponse> SearchAsync(string query)
         {
             var requestUri = $"{_endpoint}?q={Uri.EscapeDataString(query)}";
             _httpClient.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", _apiKey);
@@ -27,7 +28,7 @@ namespace CloudServiceTest
             if (response.IsSuccessStatusCode)
             {
                 var jsonResponse = await response.Content.ReadAsStringAsync();
-                var result = JsonSerializer.Deserialize<Models.Azure.BingSearchResponse>(jsonResponse);
+                return JsonSerializer.Deserialize<Models.Azure.BingSearchResponse>(jsonResponse);
             }
 
             return null;

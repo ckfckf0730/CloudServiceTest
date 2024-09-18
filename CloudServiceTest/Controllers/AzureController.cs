@@ -17,7 +17,7 @@ public class AzureController : Controller
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly UserManager<ApplicationUser> _userManager;
 
-    private readonly string _azureShareFolder = "sharedfolders"; 
+    private readonly string _azureShareFolder = "sharedfolders";
 
     public AzureController(FileStorageService fileStorageService, DatabaseService databaseService,
         ImageService imageService, ImageAnalysisService imageAnalysisService, BingSearchService bingSearchService,
@@ -38,50 +38,64 @@ public class AzureController : Controller
     }
 
 
-    public IActionResult PictureList()
+    public async Task<IActionResult> PictureList()
     {
+        if (!IsLogin(out var userName))
+        {
+            var errorModel = new CommonResultModel { Message = "Please Login！" };
+            return View("CommonResult", errorModel);
+        }
+
         ThumbnailViewModel model = new ThumbnailViewModel();
         model.DataList = new List<ThumbnailData>();
 
-        if (IsLogin(out var userName))
+        var list = _databaseService.LoadFileRecord(userName);
+        foreach (var item in list)
         {
-            var list = _databaseService.LoadFileRecord(userName);
-            foreach(var item in list)
+            var stream = DownLoadFromAzure(item.ThumbnailId.ToString());
+            if (stream == null)
             {
-                var stream = DownLoadFromAzure(item.ThumbnailId.ToString());
-                if(stream == null)
-                {
-                    continue;
-                }
-                using (var memoryStream = new MemoryStream())
-                {
-                    stream.CopyTo(memoryStream);
-                    var imageBytes = memoryStream.ToArray();
-                    var base64String = Convert.ToBase64String(imageBytes);
-
-                    var fileExtension = Path.GetExtension(item.FileName).ToLower();
-                    string mimeType = fileExtension switch
-                    {
-                        ".jpg" or ".jpeg" => "image/jpeg",
-                        ".png" => "image/png",
-                        ".gif" => "image/gif",
-                        ".bmp" => "image/bmp",
-                        _ => "application/octet-stream"  // 默认 MIME 类型，处理未知的扩展名
-                    };
-
-                    var imageSrc = $"data:{mimeType};base64,{base64String}";
-
-                    ThumbnailData thumb = new ThumbnailData { Name = item.FileName, 
-                        ImageSrc = imageSrc , ResId = item.Id ,Tag = item.Tag};
-                    model.DataList.Add(thumb);
-                }
+                continue;
             }
+            using (var memoryStream = new MemoryStream())
+            {
+                stream.CopyTo(memoryStream);
+                var imageBytes = memoryStream.ToArray();
+                var base64String = Convert.ToBase64String(imageBytes);
 
-            return View("PictureList", model);
+                var fileExtension = Path.GetExtension(item.FileName).ToLower();
+                string mimeType = fileExtension switch
+                {
+                    ".jpg" or ".jpeg" => "image/jpeg",
+                    ".png" => "image/png",
+                    ".gif" => "image/gif",
+                    ".bmp" => "image/bmp",
+                    _ => "application/octet-stream"  // 默认 MIME 类型，处理未知的扩展名
+                };
+
+                var imageSrc = $"data:{mimeType};base64,{base64String}";
+
+                ThumbnailData thumb = new ThumbnailData
+                {
+                    Name = item.FileName,
+                    ImageSrc = imageSrc,
+                    ResId = item.Id,
+                    Tag = item.Tag
+                };
+                model.DataList.Add(thumb);
+            }
         }
 
-        var errorModel = new CommonResultModel { Message = "Please Login！" };
-        return View("CommonResult", errorModel);
+        Random random = new Random();
+        int randomIndex = random.Next(0, list.Count);
+        var tag = list[randomIndex].Tag;
+        var bingResponse = await _bingSearchService.SearchAsync(tag);
+        if(bingResponse?.images?.value.Length > 0)
+        {
+            model.BingSearchImage = bingResponse.images.value[0];
+        }
+
+        return View("PictureList", model);
     }
 
     private Stream? DownLoadFromAzure(string azureName)
@@ -101,7 +115,7 @@ public class AzureController : Controller
             ".png" => "image/png",
             ".gif" => "image/gif",
             ".bmp" => "image/bmp",
-            _ => "application/octet-stream" 
+            _ => "application/octet-stream"
         };
 
         return File(stream, mimeType, fileRecord.FileName);
@@ -129,7 +143,7 @@ public class AzureController : Controller
             ".bmp" => "image/bmp",
             _ => "application/octet-stream"
         };
-            
+
         //Response.Headers["Cache-Control"] = "public, max-age=3600";
         //Response.Headers["ETag"] = eTag;
         return File(stream, mimeType);
@@ -152,7 +166,7 @@ public class AzureController : Controller
     public async Task<IActionResult> UploadFile(IFormFile file)
     {
         string userName;
-        if(!IsLogin(out userName))
+        if (!IsLogin(out userName))
         {
             var model = new CommonResultModel { Message = "Please Upload Picture after Login！" };
             return View("CommonResult", model);
@@ -164,7 +178,7 @@ public class AzureController : Controller
             return View("CommonResult", model);
         }
 
-        if(!_imageService.IsImage(file))
+        if (!_imageService.IsImage(file))
         {
             var model = new CommonResultModel { Message = "Upload file must be a picture！" };
             return View("CommonResult", model);
@@ -183,7 +197,7 @@ public class AzureController : Controller
             ThumbnailId = thumbnailGuid
         };
 
-        using(var transaction = await _databaseService.GetTransactionAsync())
+        using (var transaction = await _databaseService.GetTransactionAsync())
         {
             bool isSuccess = false;
             string ErrorMsg = null;
@@ -195,7 +209,7 @@ public class AzureController : Controller
                     newFile.Tag = tag;
                     var saveResult = await _databaseService.SaveFileRecordAsync(newFile);
 
-                    if(saveResult == 1)
+                    if (saveResult == 1)
                     {
                         stream.Position = 0;
                         var updateName = newFile.Id.ToString();
@@ -235,13 +249,13 @@ public class AzureController : Controller
         using (var transaction = await _databaseService.GetTransactionAsync())
         {
             var num = await _databaseService.DeleteFileRecordAsync(guid);
-            if(num == 1)
+            if (num == 1)
             {
                 try
                 {
                     await _fileStorageService.DeleteFileAsync(_azureShareFolder, record.ThumbnailId.ToString());
                     var result = await _fileStorageService.DeleteFileAsync(_azureShareFolder, guid.ToString());
-                    if(!result)
+                    if (!result)
                     {
                         transaction.Rollback();
                         return Content("Delete Azure file Error: " + guid);
@@ -257,7 +271,7 @@ public class AzureController : Controller
                     return Content("File delete faultily: " + ex.Message);
                 }
             }
-            else if(num ==0)
+            else if (num == 0)
             {
                 return Content("File delete faultily. Can't delete datebase row: " + guid);
             }
@@ -268,18 +282,18 @@ public class AzureController : Controller
             }
         }
 
-        return PictureList();
+        return await PictureList();
     }
 
     private async Task UpdateThumbnail(IFormFile file, string name)
     {
         var data = _imageService.GenerateThumbnail(file);
-        if(data == null)
+        if (data == null)
         {
             return;
         }
 
-        using(var stream = new MemoryStream(data))
+        using (var stream = new MemoryStream(data))
         {
             var result = await _fileStorageService.UploadFileAsync(_azureShareFolder, name, stream);
             var str = result.GetRawResponse();

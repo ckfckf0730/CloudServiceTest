@@ -4,7 +4,7 @@
     {
         public List<ThumbnailData> DataList { get; set; }
 
-      
+        public BingSearchImage BingSearchImage { get; set; }
     }
 
     public class ThumbnailData

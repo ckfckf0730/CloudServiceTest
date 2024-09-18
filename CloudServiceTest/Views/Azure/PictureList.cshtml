@@ -19,3 +19,11 @@
     </div>
 
 }
+
+<div style="border: 2px solid blue; position: fixed; bottom: 10px; right: 10px; width: 200px; background-color: white; z-index: 1000;">
+    <p>Promote according to your preferences:</p>
+    <a href=@Model.BingSearchImage.webSearchUrl target="_blank">
+        <img src=@Model.BingSearchImage?.thumbnailUrl alt="Promote Picture" style="width: 100%; height: auto; object-fit: contain;>
+    </a>
+    <p>@Model.BingSearchImage.name</p>
+</div>
