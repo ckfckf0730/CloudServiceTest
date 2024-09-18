@@ -90,7 +90,8 @@ public class AzureController : Controller
         int randomIndex = random.Next(0, list.Count);
         var tag = list[randomIndex].Tag;
         var bingResponse = await _bingSearchService.SearchAsync(tag);
-        if(bingResponse?.images?.value.Length > 0)
+        model.BingSearchImage = new BingSearchImage();
+        if (bingResponse?.images?.value.Length > 0)
         {
             model.BingSearchImage = bingResponse.images.value[0];
         }
@@ -223,7 +224,7 @@ public class AzureController : Controller
             catch (Exception ex)
             {
                 transaction.RollbackAsync();
-                return Content("File uploaded faultily:" + ex.Message);
+                return Json(new { success = false, message = "File uploaded faultily:" + ex.Message });
             }
 
 
@@ -231,12 +232,12 @@ public class AzureController : Controller
             {
                 transaction.Commit();
                 UpdateThumbnail(file, newFile.ThumbnailId.ToString());
-                return Content("File uploaded successfully.");
+                return Json(new { success = true, message = "File uploaded successfully." });
             }
             else
             {
                 transaction.RollbackAsync();
-                return Content("File uploaded faultily:" + ErrorMsg);
+                return Json(new { success = false, message = "File upload failed." });
             }
         }
     }

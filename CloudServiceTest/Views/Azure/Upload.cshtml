@@ -1,12 +1,45 @@
 ﻿
 <h2>Upload File</h2>
 
-<form asp-controller="Azure" asp-action="UploadFile" method="post" enctype="multipart/form-data">
-    <div>
-        <label for="file">Choose a file:</label>
-        <input type="file" id="file" name="file" accept=".jpeg,.jpg,.png,.bmp" />
-    </div>
-    <div>
-        <button type="submit">Upload</button>
-    </div>
+<form id="uploadForm" asp-controller="Azure" asp-action="UploadFile" method="post" enctype="multipart/form-data">
+	<div>
+		<label for="file">Choose a file:</label>
+		<input type="file" id="file" name="file" accept=".jpeg,.jpg,.png,.bmp" />
+	</div>
+	<div>
+		<button type="submit">Upload</button>
+	</div>
 </form>
+
+<p id="uploadResult">
+</p>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+	$(document).ready(function () {
+		$("#uploadForm").submit(function (e) {
+			e.preventDefault();  // 阻止表单提交刷新页面
+
+			var formData = new FormData(this);
+
+			$.ajax(
+				{
+					url: '/Azure/UploadFile',
+					type: 'POST',
+					data: formData,
+					contentType: false,
+					processData: false,
+					success: function (response) 
+					{
+						console.log(response);
+						$("#uploadResult").text("File upload successly. " );  // 在<p>中显示响应信息
+					},
+					error: function (jqXHR, textStatus, errorThrown) {
+						$("#uploadResult").text("File upload failed: " + textStatus);
+						console.log(jqXHR.responseText);
+					}
+				});
+		});
+	});
+</script>
