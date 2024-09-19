@@ -33,7 +33,7 @@
 					success: function (response) 
 					{
 						console.log(response);
-						$("#uploadResult").text("File upload successly. " );  // 在<p>中显示响应信息
+						$("#uploadResult").text("File upload successly. " + JSON.stringify(response));  // 在<p>中显示响应信息
 					},
 					error: function (jqXHR, textStatus, errorThrown) {
 						$("#uploadResult").text("File upload failed: " + textStatus);

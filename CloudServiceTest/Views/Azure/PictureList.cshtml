@@ -2,10 +2,13 @@
 
 <h2>All your uploaded pictures</h2>
 
+<button id="sortByName">Sort by Name</button>
+<button id="sortByTag">Sort by Tag</button>
 
+<div id="container">
 @foreach (var data in Model.DataList)
 {
-    <div style="border: 2px solid black;">
+    <div class="sortable-item" data-name="@data.Name" data-tag="@data.Tag" style="border: 2px solid black;">
         <a href="/Azure/DisplayImage?guid=@data.ResId">
             <img src="@data.ImageSrc" alt="Image from Azure" style="max-width: 200px; margin: 10px;" />
         </a>
@@ -19,6 +22,33 @@
     </div>
 
 }
+</div>>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function () {
+        // 按名称排序
+        $('#sortByName').click(function () {
+            var sortedDivs = $('.sortable-item').sort(function (a, b) {
+                return $(a).data('name').localeCompare($(b).data('name'));
+            });
+            $('#container').html(sortedDivs);
+        });
+
+        // 按标签排序
+        $('#sortByTag').click(function () {
+            var sortedDivs = $('.sortable-item').sort(function (a, b) {
+                return $(a).data('tag').localeCompare($(b).data('tag'));
+            });
+            $('#container').html(sortedDivs);
+        });
+    });
+</script>
+
+
+<div id="container">
+    <!-- 上面的 foreach 生成的 divs 都在这里 -->
+</div>
 
 <div style="border: 2px solid blue; position: fixed; bottom: 10px; right: 10px; width: 200px; background-color: white; z-index: 1000;">
     <p>Promote according to your preferences:</p>
@@ -27,3 +57,8 @@
     </a>
     <p>@Model.BingSearchImage.name</p>
 </div>
+
+
+
+
+

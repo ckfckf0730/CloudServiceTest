@@ -67,7 +67,7 @@ namespace CloudServiceTest
         }
 
 
-        public byte[] GenerateThumbnail(IFormFile originalImage, int sideLength = 64)
+        public byte[] GenerateThumbnail(IFormFile originalImage, int sideLength = 128)
         {
 
             using (var originalImageStream = originalImage.OpenReadStream())

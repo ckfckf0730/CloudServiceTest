@@ -91,9 +91,9 @@ public class AzureController : Controller
         var tag = list[randomIndex].Tag;
         var bingResponse = await _bingSearchService.SearchAsync(tag);
         model.BingSearchImage = new BingSearchImage();
-        if (bingResponse?.images?.value.Length > 0)
+        if (bingResponse != null)
         {
-            model.BingSearchImage = bingResponse.images.value[0];
+            model.BingSearchImage = bingResponse;
         }
 
         return View("PictureList", model);
