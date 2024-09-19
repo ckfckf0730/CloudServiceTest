@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Identity;
 using CloudServiceTest.Models.Database;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using CloudServiceTest.Models.Azure;
-using Azure;
 
 public class AzureController : Controller
 {

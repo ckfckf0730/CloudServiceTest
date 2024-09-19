@@ -9,3 +9,20 @@
 
 CloudServiceTest/bin/Debug/net8.0/appsettings.Development.json
 CloudServiceTest/appsettings.Development.json
+CloudServiceTest/obj/CloudServiceTest.csproj.nuget.dgspec.json
+CloudServiceTest/bin/Debug/net8.0/CloudServiceTest.staticwebassets.runtime.json
+CloudServiceTest/obj/project.assets.json
+*.cache
+CloudServiceTest/obj/Debug/net8.0/CloudServiceTest.AssemblyInfo.cs
+CloudServiceTest/bin/Debug/net8.0/CloudServiceTest.dll
+CloudServiceTest/obj/CloudServiceTest.csproj.nuget.g.props
+CloudServiceTest/obj/Debug/net8.0/CloudServiceTest.csproj.FileListAbsolute.txt
+CloudServiceTest/obj/Debug/net8.0/CloudServiceTest.dll
+CloudServiceTest/obj/Debug/net8.0/CloudServiceTest.GeneratedMSBuildEditorConfig.editorconfig
+CloudServiceTest/obj/Debug/net8.0/CloudServiceTest.sourcelink.json
+
+CloudServiceTest/obj/Debug/net8.0/ref/CloudServiceTest.dll
+CloudServiceTest/obj/Debug/net8.0/refint/CloudServiceTest.dll
+CloudServiceTest/obj/Debug/net8.0/staticwebassets.build.json
+CloudServiceTest/obj/Debug/net8.0/staticwebassets.development.json
+CloudServiceTest/obj/Debug/net8.0/staticwebassets.pack.json
