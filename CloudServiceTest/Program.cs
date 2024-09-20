@@ -14,6 +14,8 @@ builder.Services.AddSingleton<CloudServiceTest.ImageAnalysisService>();
 builder.Services.AddSingleton<CloudServiceTest.ImageService>();
 builder.Services.AddSingleton<CloudServiceTest.BingSearchService>();
 builder.Services.AddScoped<CloudServiceTest.DatabaseService>();
+builder.Services.Configure<CloudServiceTest.SmtpSettings>(builder.Configuration.GetSection("Smtp"));
+builder.Services.AddTransient<CloudServiceTest.IEmailSender, CloudServiceTest.EmailSender>();
 
 // add database connection
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");

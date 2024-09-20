@@ -26,3 +26,8 @@ CloudServiceTest/obj/Debug/net8.0/refint/CloudServiceTest.dll
 CloudServiceTest/obj/Debug/net8.0/staticwebassets.build.json
 CloudServiceTest/obj/Debug/net8.0/staticwebassets.development.json
 CloudServiceTest/obj/Debug/net8.0/staticwebassets.pack.json
+CloudServiceTest/bin/Debug/net8.0/CloudServiceTest.deps.json
+CloudServiceTest/bin/Debug/net8.0/BouncyCastle.Cryptography.dll
+CloudServiceTest/bin/Debug/net8.0/CloudServiceTest.deps.json
+CloudServiceTest/bin/Debug/net8.0/MailKit.dll
+CloudServiceTest/bin/Debug/net8.0/MimeKit.dll

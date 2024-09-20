@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using CloudServiceTest.Models;
+using Newtonsoft.Json.Linq;
 
 namespace CloudServiceTest.Controllers
 {
@@ -8,17 +9,36 @@ namespace CloudServiceTest.Controllers
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly IEmailSender _emailSender;
 
-        public AccountController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager)
+        public AccountController(UserManager<ApplicationUser> userManager, 
+            SignInManager<ApplicationUser> signInManager, IEmailSender emailSender)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _emailSender = emailSender;
         }
 
         [HttpGet]
         public IActionResult Register()
         {
             return View();
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> CheckConfirmed()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if(user == null )
+            {
+                return Content("No User");
+            }
+            if(await _userManager.IsEmailConfirmedAsync(user))
+            {
+                return Content("The user has been confirmed.");
+            }
+
+            return Content("Not been confirmed.");
         }
 
         [HttpPost]
@@ -29,14 +49,22 @@ namespace CloudServiceTest.Controllers
                 var user = new ApplicationUser { UserName = model.Email, Email = model.Email };
                 var result = await _userManager.CreateAsync(user, model.Password);
 
-                if (result.Succeeded)
-                {
+                    if (result.Succeeded)
+                    {
+                        // 生成邮箱确认令牌
+                    var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                    var confirmationLink = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, token = token }, Request.Scheme);
+
+                    // 发送电子邮件包含确认链接
+                    await _emailSender.SendEmailAsync(model.Email, "Confirm your email",
+                        $"Please confirm your account by clicking this link: <a href='{confirmationLink}'>link</a>");
+
                     await _signInManager.SignInAsync(user, isPersistent: false);
-                    var successModel = new RegisterResultViewModel { Message = "注册成功！" };
+                    var successModel = new RegisterResultViewModel { Message = "Regist Successfully！ You will receive a confirm e-mail, please check." };
                     return View("RegisterResultViewModel", successModel);//RedirectToAction("Index", "Home");
                 }
 
-                var faultModel = new RegisterResultViewModel { Message = "注册失败！" };
+                var faultModel = new RegisterResultViewModel { Message = "Regist faultily！" };
                 foreach (var error in result.Errors)
                 {
                     ModelState.AddModelError(string.Empty, error.Description);
@@ -47,6 +75,28 @@ namespace CloudServiceTest.Controllers
             }
 
             return View(model);
+        }
+
+        public async Task<IActionResult> ConfirmEmail(string userId, string token)
+        {
+            if (userId == null || token == null)
+            {
+                return Content("EmailConfirmed Error");
+            }
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return Content("EmailConfirmed Error");
+            }
+
+            var result = await _userManager.ConfirmEmailAsync(user, token);
+            if (result.Succeeded)
+            {
+                return Content("EmailConfirmed");
+            }
+
+            return Content("EmailConfirmed Error");
         }
 
         [HttpGet]
