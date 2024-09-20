@@ -51,11 +51,11 @@ namespace CloudServiceTest.Controllers
 
                     if (result.Succeeded)
                     {
-                        // 生成邮箱确认令牌
+                        // create token
                     var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                     var confirmationLink = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, token = token }, Request.Scheme);
 
-                    // 发送电子邮件包含确认链接
+                    // Send e-mail to comfirm regist
                     await _emailSender.SendEmailAsync(model.Email, "Confirm your email",
                         $"Please confirm your account by clicking this link: <a href='{confirmationLink}'>link</a>");
 
