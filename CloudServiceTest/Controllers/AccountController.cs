@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using CloudServiceTest.Models;
 using Newtonsoft.Json.Linq;
+using System.Formats.Asn1;
 
 namespace CloudServiceTest.Controllers
 {
@@ -114,6 +115,20 @@ namespace CloudServiceTest.Controllers
 
                 if (result.Succeeded)
                 {
+                    var user = await _userManager.GetUserAsync(User);
+                    if (!await _userManager.IsEmailConfirmedAsync(user))
+                    {
+                        var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                        var confirmationLink = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, token = token }, Request.Scheme);
+
+                        // Send e-mail to comfirm regist
+                        await _emailSender.SendEmailAsync(model.Email, "Confirm your email",
+                            $"Please confirm your account by clicking this link: <a href='{confirmationLink}'>link</a>");
+
+                        await _signInManager.SignInAsync(user, isPersistent: false);
+                        var successModel = new RegisterResultViewModel { Message = "Regist Successfully！ You will receive a confirm e-mail, please check." };
+                    }
+
                     return RedirectToAction("Index", "Home");
                 }
 
@@ -128,6 +143,21 @@ namespace CloudServiceTest.Controllers
         {
             await _signInManager.SignOutAsync();
             return RedirectToAction("Index", "Home");
+        }
+
+        public async Task AddRole()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user != null)
+            {
+                var isAdmin = await _userManager.IsInRoleAsync(user,"Admin");
+                if (!isAdmin)
+                {
+                    await _userManager.AddToRoleAsync(user, "Admin");
+                }
+                await _signInManager.SignInAsync(user, isPersistent: false);
+            }
+
         }
     }
 }

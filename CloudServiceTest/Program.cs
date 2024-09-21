@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Identity;
 using CloudServiceTest.Models;
 using CloudServiceTest.Data;
+using Microsoft.Extensions.DependencyInjection;
+using System;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,9 +34,17 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options=>
     options.Password.RequireUppercase = false;
 })
     .AddEntityFrameworkStores<ApplicationDbContext>()
-    .AddDefaultTokenProviders();
+    .AddDefaultTokenProviders()
+    .AddRoles<IdentityRole>();
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    await InitializeRoles(services);
+}
+
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
@@ -57,3 +67,24 @@ app.MapControllerRoute(
 //app.MapRazorPages();
 
 app.Run();
+
+
+
+async Task InitializeRoles(IServiceProvider serviceProvider)
+{
+    var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+
+    // Define Roles
+    string[] roleNames = { "Admin", "User", "Manager" };
+    IdentityResult roleResult;
+
+    foreach (var roleName in roleNames)
+    {
+        // check role，create if not exist.
+        var roleExist = await roleManager.RoleExistsAsync(roleName);
+        if (!roleExist)
+        {
+            roleResult = await roleManager.CreateAsync(new IdentityRole(roleName));
+        }
+    }
+}
