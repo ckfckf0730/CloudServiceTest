@@ -1,0 +1,58 @@
+﻿@model CloudServiceTest.Models.NewsViewModel
+
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Show/Hide Div Example</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+	<script>
+		$(document).ready(function () {
+			$("#myButton").click(function () {
+				$("#myDiv").toggle();  // switch show/hide
+			});
+		});
+	</script>
+</head>
+<body>
+
+	<h2>News</h2>
+
+	@if (User.IsInRole("Admin"))
+	{
+		<button id="myButton" type="button">Add news</button>
+	}
+
+	<!-- hided div -->
+	<div id="myDiv" style="display:none;">
+		<form asp-action="CreateNews" method="post">
+			<div>
+				<label asp-for="Title"></label>
+				<input asp-for="Title" id="titleInput" />
+			</div>
+			<div>
+				<label asp-for="Content"></label>
+				<textarea asp-for="Content" id="contentTextarea" rows="10" cols="50"></textarea>
+			</div>
+			<button type="submit">Register</button>
+		</form>
+		<script>
+			document.getElementById("titleInput").addEventListener("keydown", function (e) {
+				if (e.key === "Enter") {
+					e.preventDefault(); 
+					document.getElementById("contentTextarea").focus(); 
+				}
+			});
+		</script>
+
+	</div>
+</body>
+</html>
+
+
+
+
+
+
+
+
