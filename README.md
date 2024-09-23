@@ -36,5 +36,22 @@ Microsoft.AspNetCore.Identityがアカウントの機能はほぼ全部揃えま
 注意事項はsmptを使用メールは、元のパスワード使わず、Application passwordが申し込み必要がある可能です。<br>
 ![describe1](https://github.com/ckfckf0730/CloudServiceTest/blob/main/readme/ConfirmEmail.png)<br>
 <br>
+***
+Azureクラウドサービスのイメージアップロードと関連支援機能：<br>
+Azureのサイトにストレージのサービス申し込み、接続の配置などしたら、ファイルのアップロードができる。<br>
+拡張子が変えやすいので、画像のみアップロードできるため、ファイルの4バイとのheader分析し、ファイルしが画像かないか分かれます。<br>
+SixLabors.ImageSharp使用して、縮小画像作ります。<br>
+元画像と縮小画像をAzureに転送します。<br>
+Azure画像のGuid、所有者のGuidなど、全てのインフォメーションが地元のデータベースに保存します。<br>
+そしてユーザがアップロードされた画像をチェックしたい時、複数の縮小画像を画面に展示して、次の操作用意されます。<br>
+<br>
+***
+Azureの画像分析AI使用Tag生成と、好み内容のプロモーション：<br>
+Azure Computer Visionが画像のTag自動的に生成できる。<br>
+ユーザがアップロードした画像のTagデータをデータベースに保存して、適当な時、関する内容のプロモーションができる。<br>
+最初はAmazonのProduct Advertising APIを使用、商品の販売インフォメーション展示したいが、<br>
+そのアカウントの登録が、実の店舗が必要らしいです。<br>
+そして今Bing Searchを使用して、関連のインターネット画像表されます。<br>
+<br>
 <br>
 <br>

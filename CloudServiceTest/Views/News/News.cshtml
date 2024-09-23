@@ -17,32 +17,49 @@
 <body>
 
 	<h2>News</h2>
-
+	@* The button of Show Add news *@
 	@if (User.IsInRole("Admin"))
 	{
 		<button id="myButton" type="button">Add news</button>
 	}
 
-	<!-- hided div -->
+	@* ul of News Titles *@
+	<ul style="border: 1px solid blue;">
+		@foreach(var item in Model.NewsArr)
+		{
+			<li><a href="/news/1">@item.Title</a></li>
+		}
+	</ul>
+
+	<!-- hided div of Add news -->
 	<div id="myDiv" style="display:none;">
-		<form asp-action="CreateNews" method="post">
+		<form asp-action="CreateNews" method="post" id="newsForm">
 			<div>
-				<label asp-for="Title"></label>
-				<input asp-for="Title" id="titleInput" />
+				<label asp-for="NewNews.Title"></label>
+				<input asp-for="NewNews.Title" id="titleInput" />
 			</div>
 			<div>
-				<label asp-for="Content"></label>
-				<textarea asp-for="Content" id="contentTextarea" rows="10" cols="50"></textarea>
+				<label asp-for="NewNews.Content"></label>
+				<textarea asp-for="NewNews.Content" id="contentTextarea" rows="10" cols="50"></textarea>
 			</div>
-			<button type="submit">Register</button>
+			<button type="submit">Submit</button>
 		</form>
 		<script>
 			document.getElementById("titleInput").addEventListener("keydown", function (e) {
 				if (e.key === "Enter") {
-					e.preventDefault(); 
-					document.getElementById("contentTextarea").focus(); 
+					e.preventDefault();
+					document.getElementById("contentTextarea").focus();
 				}
 			});
+
+			document.getElementById("newsForm").addEventListener("submit", function (e) {
+				var titleValue = document.getElementById("titleInput").value.trim();
+				if (!titleValue) {
+					e.preventDefault(); 
+					alert("Title cannot be empty!"); 
+				}
+			});
+
 		</script>
 
 	</div>

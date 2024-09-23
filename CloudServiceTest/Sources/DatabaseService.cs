@@ -14,7 +14,9 @@ namespace CloudServiceTest
     {
         private readonly ApplicationDbContext _dbContext;
 
-        public DatabaseService(ApplicationDbContext dbContext)
+        public ApplicationDbContext Context { get { return _dbContext; } }
+
+		public DatabaseService(ApplicationDbContext dbContext)
         {
             _dbContext = dbContext;
         }
