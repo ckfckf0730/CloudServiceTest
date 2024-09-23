@@ -39,10 +39,12 @@ Microsoft.AspNetCore.Identityがアカウントの機能はほぼ全部揃えま
 ***
 Azureクラウドサービスのイメージアップロードと関連支援機能：<br>
 Azureのサイトにストレージのサービス申し込み、接続の配置などしたら、ファイルのアップロードができる。<br>
+![describe1](https://github.com/ckfckf0730/CloudServiceTest/blob/main/readme/AzureStorageList.png)<br>
 拡張子が変えやすいので、画像のみアップロードできるため、ファイルの4バイとのheader分析し、ファイルしが画像かないか分かれます。<br>
 SixLabors.ImageSharp使用して、縮小画像作ります。<br>
 元画像と縮小画像をAzureに転送します。<br>
 Azure画像のGuid、所有者のGuidなど、全てのインフォメーションが地元のデータベースに保存します。<br>
+![describe1](https://github.com/ckfckf0730/CloudServiceTest/blob/main/readme/Database01.png)<br>
 そしてユーザがアップロードされた画像をチェックしたい時、複数の縮小画像を画面に展示して、次の操作用意されます。<br>
 <br>
 ***
