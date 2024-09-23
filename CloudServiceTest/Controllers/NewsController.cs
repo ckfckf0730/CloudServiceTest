@@ -2,6 +2,7 @@
 using CloudServiceTest.Models.Database;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace CloudServiceTest.Controllers
 {
@@ -51,5 +52,26 @@ namespace CloudServiceTest.Controllers
 
 			return View("News");
         }
-    }
+
+        [HttpGet]
+		public async Task<IActionResult> NewsContent(Guid newsId)
+        {
+            var newsRecourd =  await _databaseService.Context.NewsRecords.FirstOrDefaultAsync(n => n.Id == newsId);
+            if(newsRecourd == null)
+            {
+                return Content("Can't find newsId: "+ newsId);
+            }
+
+			NewsData model = new NewsData();
+			model.Title = newsRecourd.Title;
+            model.Content = newsRecourd.Content;
+
+			
+			model.Publisher = (await _userManager.FindByIdAsync(newsRecourd.PublisherId.ToString()))?.UserName;
+
+            return View(model);
+		}
+
+
+	}
 }

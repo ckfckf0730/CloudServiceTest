@@ -27,7 +27,7 @@
 	<ul style="border: 1px solid blue;">
 		@foreach(var item in Model.NewsArr)
 		{
-			<li><a href="/news/1">@item.Title</a></li>
+			<li><a href="/News/NewsContent?newsId=@item.Id">@item.Title</a></li>
 		}
 	</ul>
 

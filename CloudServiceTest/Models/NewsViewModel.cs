@@ -18,6 +18,7 @@ namespace CloudServiceTest.Models
 
 		public string Content { get; set; }
 
+		public string Publisher { get; set; }
 		//public string Attachments { get; set; }
 	}
 }
