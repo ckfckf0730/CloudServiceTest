@@ -27,6 +27,12 @@ namespace CloudServiceTest.Controllers
         }
 
         [HttpGet]
+        public IActionResult Login()
+        {
+            return View();
+        }
+
+        [HttpGet]
         public async Task<IActionResult> CheckConfirmed()
         {
             var user = await _userManager.GetUserAsync(User);
@@ -99,12 +105,6 @@ namespace CloudServiceTest.Controllers
             }
 
             return Content("EmailConfirmed Error");
-        }
-
-        [HttpGet]
-        public IActionResult Login()
-        {
-            return View();
         }
 
         [HttpPost]

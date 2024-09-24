@@ -1,7 +1,23 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
-@{
-}
+﻿@model CloudServiceTest.Models.AdminViewModel
 
 <h1>Welcome back, Administrator.</h1>
+
+<table>
+    <thead>
+        <tr>
+            <th>Username</th>
+            <th>Action</th>
+            <th>Action2</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var user in Model.Users)
+        {
+            <tr>
+                <td>@user.UserName</td>
+                <td><button>Add Role</button></td>
+                <td><button>Delete Role</button></td>
+            </tr>
+        }
+    </tbody>
+</table>

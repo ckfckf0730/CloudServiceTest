@@ -29,6 +29,7 @@ Asp.NET CoreのEntity Framework Code Firstの特徴を活用し、C#でデータ
 <br>
 ***
 アカウントの登録とログイン：<br>
+<br>
 Microsoft.AspNetCore.Identityがアカウントの機能はほぼ全部揃えました。<br>
 アカウントのユーザーネームはフォルト形式がメールアドレスのです。<br>
 でも本当のメールアドレスかないか、確認しなければならないです。<br>
@@ -38,6 +39,7 @@ Microsoft.AspNetCore.Identityがアカウントの機能はほぼ全部揃えま
 <br>
 ***
 Azureクラウドサービスのイメージアップロードと関連支援機能：<br>
+<br>
 Azureのサイトにストレージのサービス申し込み、接続の配置などしたら、ファイルのアップロードができる。<br>
 ![describe1](https://github.com/ckfckf0730/CloudServiceTest/blob/main/readme/AzureStorageList.png)<br>
 拡張子が変えやすいので、画像のみアップロードできるため、ファイルの4バイとのheader分析し、ファイルしが画像かないか分かれます。<br>
@@ -49,11 +51,30 @@ Azure画像のGuid、所有者のGuidなど、全てのインフォメーショ�
 <br>
 ***
 Azureの画像分析AI使用Tag生成と、好み内容のプロモーション：<br>
+<br>
 Azure Computer Visionが画像のTag自動的に生成できる。<br>
 ユーザがアップロードした画像のTagデータをデータベースに保存して、適当な時、関する内容のプロモーションができる。<br>
 最初はAmazonのProduct Advertising APIを使用、商品の販売インフォメーション展示したいが、<br>
 そのアカウントの登録が、実の店舗が必要らしいです。<br>
 そして今Bing Searchを使用して、関連のインターネット画像表されます。<br>
 <br>
+***
+Async Taskの使用、およびスレッドの安全：<br>
+<br>
+Unityゲーム開発の仕事中、Async Taskの使用はいくつの欠点がある、あまり使用ことがなっかた。<br>
+Async Taskの直接の使用では、CallBack関数がサブスレッドから呼び出されます。<br>
+UnityのLifeCycleはメインスレッド向けで、サブスレッドのCallBackは役立たないで、<br>
+自作のマルチスレッド・モジュールを選んで、LifeCycle関数内のCallBack設計しました。<br>
+<br>
+でもAsp.net core mvcプロジェクトは、Async Task設計の向けます。<br>
+各ControllerのデータmodelのScopedは確保できます。<br>
+できれば、Taskのよく使用してはいいです。<br>
+<br>
+注意事項は、依存性注入されるサービスは、Task使用の時、スレッド安全が重要です。<br>
+例え、このプロジェクトには、DatabaseServiceの使用時、<br>
+SaveChanges、Transactionのroll back機能は、マルチスレッド環境で競合が発生し、スレッドセーフではありません。<br>
+そのためDatabaseServiceの依存性注入はSingletonではなく、Scoped又はTransientを選ばなければなりません。<br>
+他のサービスはまだ競合が発生するロジックが見えないが、もし実際発表のプロジェクトなら、よくテストしなければなりません。<br>
+![describe1](https://github.com/ckfckf0730/CloudServiceTest/blob/main/readme/ServiceInjection.png)<br>
 <br>
 <br>
