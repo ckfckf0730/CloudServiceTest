@@ -49,6 +49,9 @@
                             <form method="post" asp-action="Logout" asp-controller="Account">
                                 <button type="submit">Logout</button>
                             </form>
+                            <form method="post" asp-action="DeleteAccount" asp-controller="Account" id="deleteForm">
+                                <button type="button" onclick="confirmDelete()">Delete Account</button>
+                            </form>
                         </div>
                     </div>
                 }
@@ -80,5 +83,15 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
+
+    <script>
+        function confirmDelete() {
+            var result = confirm("Are you sure you want to delete your account?");
+
+            if (result) {
+                document.getElementById("deleteForm").submit();
+            }
+        }
+    </script>
 </body>
 </html>

@@ -94,7 +94,8 @@ namespace CloudServiceTest.Controllers
             var result = await _userManager.ConfirmEmailAsync(user, token);
             if (result.Succeeded)
             {
-                return Content("EmailConfirmed");
+                await AddRole();
+				return Content("EmailConfirmed, you've gotten the <Admin> role");
             }
 
             return Content("EmailConfirmed Error");
@@ -145,7 +146,7 @@ namespace CloudServiceTest.Controllers
             return RedirectToAction("Index", "Home");
         }
 
-        public async Task AddRole()
+        private async Task AddRole()
         {
             var user = await _userManager.GetUserAsync(User);
             if (user != null)
@@ -158,6 +159,30 @@ namespace CloudServiceTest.Controllers
                 await _signInManager.SignInAsync(user, isPersistent: false);
             }
 
+        }
+
+        public async Task<IActionResult> DeleteAccount()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return Content("Can't find Current User");
+            }
+
+            var result = await _userManager.DeleteAsync(user);
+
+            if (result.Succeeded)
+            {
+                await _signInManager.SignOutAsync();
+                return RedirectToAction("Index", "Home");
+            }
+
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError(string.Empty, error.Description);
+            }
+
+            return Content("Delete Account Error.");
         }
     }
 }
