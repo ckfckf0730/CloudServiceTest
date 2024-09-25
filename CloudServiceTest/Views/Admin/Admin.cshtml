@@ -3,21 +3,128 @@
 <h1>Welcome back, Administrator.</h1>
 
 <table>
-    <thead>
-        <tr>
-            <th>Username</th>
-            <th>Action</th>
-            <th>Action2</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var user in Model.Users)
-        {
-            <tr>
-                <td>@user.UserName</td>
-                <td><button>Add Role</button></td>
-                <td><button>Delete Role</button></td>
-            </tr>
-        }
-    </tbody>
+	<thead>
+		<tr>
+			<th>Username</th>
+			<th>Action</th>
+			<th>Action2</th>
+		</tr>
+	</thead>
+	<tbody>
+		@foreach (var user in Model.Users)
+		{
+			<tr>
+				<td>@user.UserName</td>
+				<td><button class="AddRoleButton" data-id="@user.Id" data-name="@user.UserName">Add Role</button></td>
+				<td><button class="DeleteRoleButton">Delete Role</button></td>
+			</tr>
+		}
+	</tbody>
 </table>
+
+<!-- modalOverlay -->
+<div id="modalAddRole" class="modal-overlay">
+	<div class="modal-content">
+		<h3 id="SelectedUserName"></h3>
+		<p id="ExistingRoles"></p>
+		<h3>Please select add role</h3>
+		<div id="AddRoleArea"></div>
+
+		<button id="closeAddModalButton" class="close-button">Close</button>
+	</div>
+</div>
+
+<div id="modalDeleteRole" class="modal-overlay">
+	<div class="modal-content">
+		<h2>Modal Title</h2>
+		<p>This is the modal content. Click the button below to close the modal.</p>
+		<button id="closeDeleteModalButton" class="close-button">Close</button>
+	</div>
+</div>
+
+<script>
+	var addRoleButtons = document.querySelectorAll(".AddRoleButton");
+	var closeAddModalButton = document.getElementById("closeAddModalButton");
+	var closeDeleteModalButton = document.getElementById("closeDeleteModalButton");
+	var modalAddRole = document.getElementById("modalAddRole");
+	var modalDeleteRole = document.getElementById("modalDeleteRole");
+	var SelectedUserName = document.getElementById("SelectedUserName");
+	var ExistingRoles = document.getElementById("ExistingRoles");
+	var AddRoleArea = document.getElementById("AddRoleArea");
+
+	addRoleButtons.forEach(function (button) {
+		button.addEventListener("click", function () {
+			var userId = button.getAttribute("data-id");
+			var userName = button.getAttribute("data-name");
+			SelectedUserName.textContent = userName;
+			getUserRoles(userId, ExistingRoles);
+			getAllRoles(userName, AddRoleArea);
+
+			modalAddRole.style.display = "block";
+		});
+	});
+
+	// 关闭模态窗口
+	function closeModal() {
+		AddRoleArea.innerHTML = '';
+	}
+
+	closeAddModalButton.addEventListener("click", function () {
+		modalAddRole.style.display = "none";
+		closeModal();
+	});
+
+	// 点击灰色背景关闭模态窗口
+	modalAddRole.addEventListener("click", function (event) {
+		if (event.target === modalAddRole) {
+			modalAddRole.style.display = "none";
+			closeModal();	
+		}
+	});
+
+	function getUserRoles(userId, rolesElement) {
+		fetch(`/Admin/GetUserRoles?userId=${userId}`)
+			.then(response => {
+				if (!response.ok) {
+					throw new Error('Network response was not ok');
+				}
+				return response.json(); 
+			})
+			.then(data => {
+				rolesElement.textContent = "ExistingRoles:";
+				data.forEach(function (item) {
+					rolesElement.textContent += (" " + item)
+				});
+			})
+			.catch(error => {
+				console.error('There has been a problem with your fetch operation:', error);
+			});
+	}
+
+	function getAllRoles(userName,element) {
+		fetch(`/Admin/GetAllRoles`)
+			.then(response => {
+				if (!response.ok) {
+					throw new Error('Network response was not ok');
+				}
+				return response.json();  
+			})
+			.then(data => {
+				data.forEach(function (item) {
+					var button = document.createElement("button");
+					button.innerHTML = item.name;
+					button.addEventListener("click", function () {
+						fetch(`/Admin/AddUserRole?userName=${userName}&roleName=${item.name}`);
+						closeModal();
+						modalAddRole.style.display = "none";
+					});
+
+					element.appendChild(button);
+				});
+			}
+			)
+			.catch(error => {
+				console.error('There has been a problem with your fetch operation:', error);
+			});
+	}
+</script>
