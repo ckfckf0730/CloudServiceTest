@@ -16,41 +16,48 @@
 			<tr>
 				<td>@user.UserName</td>
 				<td><button class="AddRoleButton" data-id="@user.Id" data-name="@user.UserName">Add Role</button></td>
-				<td><button class="DeleteRoleButton">Delete Role</button></td>
+				<td><button class="DeleteRoleButton" data-id="@user.Id" data-name="@user.UserName">Delete Role</button></td>
 			</tr>
 		}
 	</tbody>
 </table>
 
-<!-- modalOverlay -->
+<!-- modalOverlay add -->
 <div id="modalAddRole" class="modal-overlay">
 	<div class="modal-content">
-		<h3 id="SelectedUserName"></h3>
+		<h4 id="SelectedUserName"></h4>
 		<p id="ExistingRoles"></p>
-		<h3>Please select add role</h3>
+		<h4>Please select added role</h4>
 		<div id="AddRoleArea"></div>
 
 		<button id="closeAddModalButton" class="close-button">Close</button>
 	</div>
 </div>
 
+<!-- modalOverlay delete -->
 <div id="modalDeleteRole" class="modal-overlay">
 	<div class="modal-content">
-		<h2>Modal Title</h2>
-		<p>This is the modal content. Click the button below to close the modal.</p>
+		<h4 id="SelectedUserName"></h4>
+		<p id="ExistingRoles2"></p>
+		<h4>Delete role</h4>
+		<div id="DeleteRoleArea"></div>
+
 		<button id="closeDeleteModalButton" class="close-button">Close</button>
 	</div>
 </div>
 
 <script>
 	var addRoleButtons = document.querySelectorAll(".AddRoleButton");
+	var deleteRoleButtons = document.querySelectorAll(".DeleteRoleButton");
 	var closeAddModalButton = document.getElementById("closeAddModalButton");
 	var closeDeleteModalButton = document.getElementById("closeDeleteModalButton");
 	var modalAddRole = document.getElementById("modalAddRole");
 	var modalDeleteRole = document.getElementById("modalDeleteRole");
 	var SelectedUserName = document.getElementById("SelectedUserName");
 	var ExistingRoles = document.getElementById("ExistingRoles");
+	var ExistingRoles2 = document.getElementById("ExistingRoles2");
 	var AddRoleArea = document.getElementById("AddRoleArea");
+	var DeleteRoleArea = document.getElementById("DeleteRoleArea");
 
 	addRoleButtons.forEach(function (button) {
 		button.addEventListener("click", function () {
@@ -64,7 +71,19 @@
 		});
 	});
 
-	// 关闭模态窗口
+	deleteRoleButtons.forEach(function (button) {
+		button.addEventListener("click", function () {
+			var userId = button.getAttribute("data-id");
+			var userName = button.getAttribute("data-name");
+			SelectedUserName.textContent = userName;
+			getUserRoles(userId, ExistingRoles2);
+			deleteUserRolesButton(userId, DeleteRoleArea);
+
+			modalDeleteRole.style.display = "block";
+		});
+	});
+
+	// close addRoleModal
 	function closeModal() {
 		AddRoleArea.innerHTML = '';
 	}
@@ -74,11 +93,27 @@
 		closeModal();
 	});
 
-	// 点击灰色背景关闭模态窗口
 	modalAddRole.addEventListener("click", function (event) {
 		if (event.target === modalAddRole) {
 			modalAddRole.style.display = "none";
-			closeModal();	
+			closeModal();
+		}
+	});
+
+	// close deleteRoleModal
+	function closeModal2() {
+		DeleteRoleArea.innerHTML = '';
+	}
+
+	closeDeleteModalButton.addEventListener("click", function () {
+		modalDeleteRole.style.display = "none";
+		closeModal2();
+	});
+
+	modalDeleteRole.addEventListener("click", function (event) {
+		if (event.target === modalDeleteRole) {
+			modalDeleteRole.style.display = "none";
+			closeModal2();
 		}
 	});
 
@@ -88,7 +123,7 @@
 				if (!response.ok) {
 					throw new Error('Network response was not ok');
 				}
-				return response.json(); 
+				return response.json();
 			})
 			.then(data => {
 				rolesElement.textContent = "ExistingRoles:";
@@ -101,13 +136,13 @@
 			});
 	}
 
-	function getAllRoles(userName,element) {
+	function getAllRoles(userName, element) {
 		fetch(`/Admin/GetAllRoles`)
 			.then(response => {
 				if (!response.ok) {
 					throw new Error('Network response was not ok');
 				}
-				return response.json();  
+				return response.json();
 			})
 			.then(data => {
 				data.forEach(function (item) {
@@ -127,4 +162,27 @@
 				console.error('There has been a problem with your fetch operation:', error);
 			});
 	}
+
+	function deleteUserRolesButton(userId, element) {
+		fetch(`/Admin/GetUserRoles?userId=${userId}`)
+			.then(response => {
+				if (!response.ok) {
+					throw new Error('Network response was not ok');
+				}
+				return response.json();
+			})
+			.then(data => {
+				data.forEach(function (item) {
+					 var button = document.createElement("button");
+					 button.innerHTML = item;
+					button.style.backgroundColor = "red";
+					button.style.color = "white";
+					element.appendChild(button);
+				});
+			})
+			.catch(error => {
+				console.error('There has been a problem with your fetch operation:', error);
+			});
+	}
+
 </script>
