@@ -76,5 +76,27 @@ namespace CloudServiceTest.Controllers
             return Json(new { isSucceeded = false });
 		}
 
+
+		public async Task<IActionResult> DeleteUserRole(string userName, string roleName)
+		{
+			var user = await _userManager.FindByNameAsync(userName);
+			if (user == null)
+			{
+				return Json(new { message = "Can't find user: " + userName });
+			}
+
+			var isRole = await _userManager.IsInRoleAsync(user, roleName);
+			if (isRole)
+			{
+				var result = await _userManager.RemoveFromRoleAsync(user, roleName);
+				return Json(new { isSucceeded = result.Succeeded });
+			}
+            else
+            {
+				return Json(new { message = "Delete role from user Error:  " + userName  + 
+                    " doesn't have role " + roleName });
+
+			}
+		}
 	}
 }

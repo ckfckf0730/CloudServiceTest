@@ -77,7 +77,7 @@
 			var userName = button.getAttribute("data-name");
 			SelectedUserName.textContent = userName;
 			getUserRoles(userId, ExistingRoles2);
-			deleteUserRolesButton(userId, DeleteRoleArea);
+			deleteUserRolesButton(userId, userName, DeleteRoleArea);
 
 			modalDeleteRole.style.display = "block";
 		});
@@ -163,7 +163,7 @@
 			});
 	}
 
-	function deleteUserRolesButton(userId, element) {
+	function deleteUserRolesButton(userId, userName, element) {
 		fetch(`/Admin/GetUserRoles?userId=${userId}`)
 			.then(response => {
 				if (!response.ok) {
@@ -177,6 +177,12 @@
 					 button.innerHTML = item;
 					button.style.backgroundColor = "red";
 					button.style.color = "white";
+					button.addEventListener("click", function(event) {
+						fetch(`/Admin/DeleteUserRole?userName=${userName}&roleName=${item}`);
+						closeModal2();
+						modalDeleteRole.style.display = "none";
+					});
+
 					element.appendChild(button);
 				});
 			})
