@@ -2,14 +2,13 @@
 using Microsoft.AspNetCore.Identity;
 using CloudServiceTest.Models;
 using CloudServiceTest.Data;
-using Microsoft.Extensions.DependencyInjection;
-using System;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services.AddHttpClient();
+builder.Services.AddSignalR();
 
 builder.Services.AddSingleton<CloudServiceTest.FileStorageService>();
 builder.Services.AddSingleton<CloudServiceTest.ImageAnalysisService>();
@@ -22,48 +21,55 @@ builder.Services.AddTransient<CloudServiceTest.IEmailSender, CloudServiceTest.Em
 // add database connection
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(connectionString));
+	options.UseSqlServer(connectionString));
 
 // add Identity services
-builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options=>
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {
-    options.Password.RequireDigit = false;
-    options.Password.RequiredLength = 6; 
-    options.Password.RequireNonAlphanumeric = false;
-    options.Password.RequireLowercase = false;
-    options.Password.RequireUppercase = false;
+	options.Password.RequireDigit = false;
+	options.Password.RequiredLength = 6;
+	options.Password.RequireNonAlphanumeric = false;
+	options.Password.RequireLowercase = false;
+	options.Password.RequireUppercase = false;
 })
-    .AddEntityFrameworkStores<ApplicationDbContext>()
-    .AddDefaultTokenProviders()
-    .AddRoles<IdentityRole>();
+	.AddEntityFrameworkStores<ApplicationDbContext>()
+	.AddDefaultTokenProviders()
+	.AddRoles<IdentityRole>();
 
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
 {
-    var services = scope.ServiceProvider;
-    await InitializeRoles(services);
+	var services = scope.ServiceProvider;
+	await InitializeRoles(services);
 }
 
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-    app.UseHsts();
+	app.UseExceptionHandler("/Home/Error");
+	// The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+	app.UseHsts();
 }
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.UseEndpoints(endpoints =>
+{
+	endpoints.MapHub<CloudServiceTest.ChatHub>("/chatHub");
+});
+
+
 app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+	name: "default",
+	pattern: "{controller=Home}/{action=Index}/{id?}");
 //app.MapRazorPages();
 
 app.Run();
@@ -72,19 +78,19 @@ app.Run();
 
 async Task InitializeRoles(IServiceProvider serviceProvider)
 {
-    var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+	var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 
-    // Define Roles
-    string[] roleNames = { "Admin", "User", "Manager" };
-    IdentityResult roleResult;
+	// Define Roles
+	string[] roleNames = { "Admin", "User", "Manager" };
+	IdentityResult roleResult;
 
-    foreach (var roleName in roleNames)
-    {
-        // check role，create if not exist.
-        var roleExist = await roleManager.RoleExistsAsync(roleName);
-        if (!roleExist)
-        {
-            roleResult = await roleManager.CreateAsync(new IdentityRole(roleName));
-        }
-    }
+	foreach (var roleName in roleNames)
+	{
+		// check role，create if not exist.
+		var roleExist = await roleManager.RoleExistsAsync(roleName);
+		if (!roleExist)
+		{
+			roleResult = await roleManager.CreateAsync(new IdentityRole(roleName));
+		}
+	}
 }

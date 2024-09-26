@@ -79,7 +79,6 @@ body {
 }
 
 
-/* 灰色背景 */
 .modal-overlay {
     display: none;
     position: fixed;
@@ -91,7 +90,6 @@ body {
     z-index: 1;
 }
 
-/* 子窗口内容 */
 .modal-content {
     position: fixed;
     top: 50%;
@@ -103,7 +101,6 @@ body {
     border-radius: 8px;
 }
 
-/* 关闭按钮样式 */
 .close-button {
     background-color: red;
     color: white;
@@ -111,3 +108,38 @@ body {
     padding: 5px 10px;
     cursor: pointer;
 }
+
+.chatbox {
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
+    width: 300px;
+    background-color: #f1f1f1;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-header {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px;
+    text-align: center;
+}
+
+.chat-content {
+    flex-grow: 1;
+    padding: 10px;
+    overflow-y: auto;
+}
+
+.chat-input {
+    display: flex;
+    padding: 10px;
+}
+
+    .chat-input input {
+        flex-grow: 1;
+        padding: 5px;
+    }
