@@ -1,5 +1,110 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
-@{
-}
+﻿@model CloudServiceTest.Models.UsersViewModel
+
+<style>
+	.container {
+		display: flex;
+		width: 1500px;
+	}
+
+	.left-div {
+		width: 35%;
+		background-color: lightblue;
+	}
+
+	.right-div {
+		width: 65%;
+		background-color: lightcoral;
+	}
+
+	.chat-area {
+		width: 100%;
+		height: 400px;
+		background-color: yellowgreen;
+	}
+
+	.input-area {
+		width: 100%;
+		height: 200px;
+	}
+</style>
+
+
+<h2>Chat page</h2>
+
+<div class="container">
+
+	<div class="left-div">
+		@foreach (var user in Model.Users)
+		{
+			<button class="SelectUser" userId="@user.Id">@user.UserName</button>
+
+			<br />
+		}
+	</div>
+
+	<div class="right-div">
+		<h4 id="OppositeUser" style="text-align: center;">Name</h4>
+		<div class="chat-area" id="charArea">
+		<!-- Messages will appear here -->
+		</div>
+		<textarea class="input-area" id="inputArea"></textarea>
+		<button id="SendMessage">Send</button>
+	</div>
+
+</div>
+
+<script>
+	//close chat Floating window
+	document.addEventListener("DOMContentLoaded", function () {
+		var chatbox = document.getElementById("chatbox");
+		if (chatbox) {
+			chatbox.style.display = "none";
+		}
+	});
+
+	var selectUserButtons = document.querySelectorAll(".SelectUser");
+	var oppositeUserName = document.getElementById("OppositeUser");
+	var chatArea = document.getElementById("charArea");
+	var inputArea = document.getElementById("inputArea");
+	var oppositeUserId = null;
+	var sendButton = document.getElementById("SendMessage");
+	sendButton.addEventListener("click", function () {
+		sendMessage();
+	});
+
+	selectUserButtons.forEach(function (button) {
+		button.addEventListener("click", function () { 
+			selectUser(button.getAttribute("userId"),button.innerHTML);
+		});
+	});
+
+	function selectUser(userId,userName) {
+		oppositeUserName.textContent = userName;
+		oppositeUserId = userId;
+	}
+
+	function sendMessage() {
+		if (inputArea.value === null || inputArea.value === '') {
+			return;
+		}
+
+		connection.invoke("SendMessage", '@Model.SelfUser.UserName', oppositeUserId, inputArea.value).catch(function (err) {
+			return console.error(err.toString());
+		});
+
+		const msg = 'You:' + inputArea.value;
+		const li = document.createElement("li");
+		li.style = "text-align: right;"
+		li.textContent = msg;
+		chatArea.appendChild(li);
+	}
+
+	connection.on("ReceiveMessage", function (user, message) {
+		const msg = `${user}: ${message}`;
+
+		const li = document.createElement("li");
+		li.textContent = msg;
+		chatArea.appendChild(li);
+	});
+
+</script>

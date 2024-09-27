@@ -32,7 +32,7 @@ namespace CloudServiceTest.Controllers
                                         .ToList();
 
 
-            AdminViewModel model = new AdminViewModel();
+            UsersViewModel model = new UsersViewModel();
             model.Users = userList;
             return View(model);
         }

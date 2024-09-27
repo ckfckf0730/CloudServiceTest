@@ -8,6 +8,9 @@
 	<link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 	<link rel="stylesheet" href="~/CloudServiceTest.styles.css" asp-append-version="true" />
 	<script src="~/microsoft-signalr/signalr.js"></script>
+	<script src="~/lib/jquery/dist/jquery.min.js"></script>
+	<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+	<script src="~/js/site.js" asp-append-version="true"></script>	
 </head>
 <body>
 	<header>
@@ -28,6 +31,9 @@
 						</li>
 						<li class="nav-item">
 							<a class="nav-link text-dark" asp-area="" asp-controller="News" asp-action="News">News</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link text-dark" asp-area="" asp-controller="Chat" asp-action="Chat">Chat</a>
 						</li>
 						@if (User.IsInRole("Admin"))
 						{
@@ -94,9 +100,6 @@
 			&copy; 2024 - CloudServiceTest - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
 		</div>
 	</footer>
-	<script src="~/lib/jquery/dist/jquery.min.js"></script>
-	<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-	<script src="~/js/site.js" asp-append-version="true"></script>
 	@await RenderSectionAsync("Scripts", required: false)
 
 	<script>
