@@ -54,13 +54,13 @@
 </div>
 
 <script>
-	//close chat Floating window
-	document.addEventListener("DOMContentLoaded", function () {
-		var chatbox = document.getElementById("chatbox");
-		if (chatbox) {
-			chatbox.style.display = "none";
-		}
-	});
+	// //close chat Floating window
+	// document.addEventListener("DOMContentLoaded", function () {
+	// 	var chatbox = document.getElementById("chatbox");
+	// 	if (chatbox) {
+	// 		chatbox.style.display = "none";
+	// 	}
+	// });
 
 	var selectUserButtons = document.querySelectorAll(".SelectUser");
 	var oppositeUserName = document.getElementById("OppositeUser");
@@ -105,6 +105,15 @@
 		const li = document.createElement("li");
 		li.textContent = msg;
 		chatArea.appendChild(li);
+		oppositeUserName.textContent = user;
+
+		callGetUserId(user);
 	});
+
+	async function callGetUserId(user) {
+		oppositeUserId = await getUserId(user);
+		console.log("Opposite User ID:", oppositeUserId);
+	}
+
 
 </script>

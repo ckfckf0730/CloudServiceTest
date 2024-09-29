@@ -8,24 +8,15 @@
         .withUrl("/chatHub")
         .build();
 
-//connection.on("ReceiveMessage", function (user, message) {
-//    const msg = `${user}: ${message}`;
-//    const li = document.createElement("li");
-//    li.textContent = msg;
-//    document.getElementById("messagesList").appendChild(li);
-//});
-
-//document.getElementById("sendButton").addEventListener("click", function (event) {
-//    const user = document.getElementById("userInput").value;
-//    const message = document.getElementById("messageInput").value;
-//    connection.invoke("SendMessage", user, message).catch(function (err) {
-//        return console.error(err.toString());
-//    });
-//    event.preventDefault();
-//});
-
 connection.start().then(function () {
     console.log("SignalR connected");
 }).catch(function (err) {
     return console.error(err.toString());
 });
+
+
+async function getUserId(userName) {
+    const response = await fetch(`/Chat/GetUserIdByName?userName=${encodeURIComponent(userName)}`);
+    const data = await response.json();
+    return data.userId;
+}

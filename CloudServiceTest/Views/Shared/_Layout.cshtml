@@ -81,19 +81,36 @@
 		</main>
 	</div>
 
-	<div id="chatbox" class="chatbox">
-		<div class="chat-header">
-			<span>Chat with Admin</span>
-			<button id="closeChat">X</button>
+	@* floating chat box *@
+	@if (ViewBag.DisableChatBox != true)
+	{
+		<div id="chatbox" class="chatbox">
+			<div class="chat-header">
+				<span>Chat with Admin</span>
+				<span id="oppositeUserName"></span>
+				<button id="closeChat">X</button>
+			</div>
+			<div class="chat-content" id="chatContent">
+				<!-- Messages will appear here -->
+			</div>
+			<div class="chat-input">
+				<input id="messageInput" type="text" placeholder="Type your message here..." />
+				<button id="sendButton">Send</button>
+			</div>
 		</div>
-		<div class="chat-content" id="chatContent">
-			<!-- Messages will appear here -->
-		</div>
-		<div class="chat-input">
-			<input id="messageInput" type="text" placeholder="Type your message here..." />
-			<button id="sendButton">Send</button>
-		</div>
-	</div>
+	}
+	<script>
+
+
+
+		// connection.on("ReceiveMessage", function (user, message) {
+		// 	const msg = `${user}: ${message}`;
+
+		// 	const li = document.createElement("li");
+		// 	li.textContent = msg;
+		// 	chatArea.appendChild(li);
+		// });
+	</script>
 
 	<footer class="border-top footer text-muted">
 		<div class="container">
@@ -111,5 +128,9 @@
 			}
 		}
 	</script>
+
+
+	
+
 </body>
 </html>

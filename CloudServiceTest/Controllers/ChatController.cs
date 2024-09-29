@@ -27,7 +27,16 @@ namespace CloudServiceTest.Controllers
             model.Users = userList;
             model.SelfUser = user;
 
+			ViewBag.DisableChatBox = true;
+
 			return View(model);
+		}
+
+		[HttpGet]
+		public async Task<IActionResult> GetUserIdByName(string userName)
+        {
+			var user = await _userManager.FindByNameAsync(userName);
+            return Ok(new { userId = user?.Id });
 		}
 	}
 }
