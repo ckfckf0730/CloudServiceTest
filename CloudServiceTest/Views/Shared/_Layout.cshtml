@@ -101,15 +101,22 @@
 	}
 	<script>
 
+		var oppositeUserId = null;
+
+		connection.on("ReceiveMessage", function (messageId) {
 
 
-		// connection.on("ReceiveMessage", function (user, message) {
-		// 	const msg = `${user}: ${message}`;
+	
 
-		// 	const li = document.createElement("li");
-		// 	li.textContent = msg;
-		// 	chatArea.appendChild(li);
-		// });
+			// const li = document.createElement("li");
+			// li.textContent = msg;
+			// chatArea.appendChild(li);
+		});
+
+		async function callGetUserId(user) {
+			oppositeUserId = await getUserId(user);
+			console.log("Opposite User ID:", oppositeUserId);
+		}
 	</script>
 
 	<footer class="border-top footer text-muted">

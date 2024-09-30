@@ -80,7 +80,11 @@
 
 	function selectUser(userId,userName) {
 		oppositeUserName.textContent = userName;
-		oppositeUserId = userId;
+		if (oppositeUserId != userId){
+			oppositeUserId = userId;
+			RefreshChatArea();
+		}
+
 	}
 
 	function sendMessage() {
@@ -88,32 +92,73 @@
 			return;
 		}
 
-		connection.invoke("SendMessage", '@Model.SelfUser.UserName', oppositeUserId, inputArea.value).catch(function (err) {
+		connection.invoke("SendMessage", '@Model.SelfUser.Id', oppositeUserId, inputArea.value).catch(function (err) {
 			return console.error(err.toString());
 		});
 
-		const msg = 'You:' + inputArea.value;
-		const li = document.createElement("li");
-		li.style = "text-align: right;"
-		li.textContent = msg;
-		chatArea.appendChild(li);
 	}
 
-	connection.on("ReceiveMessage", function (user, message) {
-		const msg = `${user}: ${message}`;
-
-		const li = document.createElement("li");
-		li.textContent = msg;
-		chatArea.appendChild(li);
-		oppositeUserName.textContent = user;
-
-		callGetUserId(user);
+	connection.on("ReceiveMessage", function (messageId) {
+		callGetMessageById(messageId);
 	});
 
-	async function callGetUserId(user) {
-		oppositeUserId = await getUserId(user);
-		console.log("Opposite User ID:", oppositeUserId);
+	async function callGetMessageById(messageId){
+		data = await getMessageById(messageId);
+
+		if (oppositeUserId != data.senderId && oppositeUserId != data.receiverId) {
+			return;
+		}
+
+		if ("@Model.SelfUser.Id" == data.senderId) {
+			ShowSendMessage(data);
+		}
+		if ("@Model.SelfUser.Id" == data.receiverId) {
+			ShowReceiveMessage(data);
+		}
+		
 	}
 
+	function ShowSendMessage(data)
+	{
+		const msg = 'You: ' + data.content + "<br>" + data.dateTime;
+		const li = document.createElement("li");
+		li.style = "text-align: right;"
+		li.innerHTML = msg;
+		chatArea.appendChild(li);
+	}
+
+	function ShowReceiveMessage(data)
+	{
+		const li = document.createElement("li");
+		let msg = data.senderName + ": " + data.content + "<br>" + data.dateTime;
+		li.innerHTML = msg;
+		chatArea.appendChild(li);
+	}
+
+	function RefreshChatArea() {
+		chatArea.innerHTML = '';
+		callGetMessagesOfTwoUser('@Model.SelfUser.Id', oppositeUserId);
+	}
+
+	async function callGetMessagesOfTwoUser(selfId, oppositeUserId) {
+		list = await getMessagesOfTwoUser(selfId, oppositeUserId);
+		
+
+		list.forEach(function (item) {
+			if ("@Model.SelfUser.Id" == item.senderId) {
+				const msg = 'You: ' + item.content + "<br>" + item.dateTime;
+				const li = document.createElement("li");
+				li.style = "text-align: right;"
+				li.innerHTML = msg;
+				chatArea.appendChild(li);
+			}
+			if ("@Model.SelfUser.Id" == item.receiverId) {
+				const li = document.createElement("li");
+				let msg = "Opposite: " + item.content + "<br>" + item.dateTime;
+				li.innerHTML = msg;
+				chatArea.appendChild(li);
+			}
+		});
+	}
 
 </script>
