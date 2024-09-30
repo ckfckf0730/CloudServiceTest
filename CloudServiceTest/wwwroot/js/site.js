@@ -20,3 +20,15 @@ async function getUserId(userName) {
     const data = await response.json();
     return data.userId;
 }
+
+async function getMessageById(messageId) {
+    const response = await fetch(`/Chat/GetMessageById?messageId=${messageId}`);
+    const data = await response.json();
+    return data;
+}
+
+async function getMessagesOfTwoUser(selfId, oppositeUserId) {
+    const response = await fetch(`/Chat/GetMessagesOfTwoUser?selfId=${selfId}&oppositeUserId=${oppositeUserId}`);
+    const data = await response.json();
+    return data;
+}
