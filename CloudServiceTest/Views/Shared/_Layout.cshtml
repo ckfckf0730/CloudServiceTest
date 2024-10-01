@@ -10,7 +10,7 @@
 	<script src="~/microsoft-signalr/signalr.js"></script>
 	<script src="~/lib/jquery/dist/jquery.min.js"></script>
 	<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-	<script src="~/js/site.js" asp-append-version="true"></script>	
+	<script src="~/js/site.js" asp-append-version="true"></script>
 </head>
 <body>
 	<header>
@@ -84,6 +84,12 @@
 	@* floating chat box *@
 	@if (ViewBag.DisableChatBox != true)
 	{
+		<div id="chatboxSwitch" class="chatbox">
+			<p>You have a new message.</p>
+			<button id="chatboxOpen">open</button>
+			<button id="chatboxClose">X</button>
+		</div>
+
 		<div id="chatbox" class="chatbox">
 			<div class="chat-header">
 				<span>Chat with Admin</span>
@@ -98,26 +104,55 @@
 				<button id="sendButton">Send</button>
 			</div>
 		</div>
+
+		<script>
+
+			var oppositeUserId = null;
+			var chatboxSwitch = document.getElementById("chatboxSwitch");
+			chatboxSwitch.style.display = "none";
+			var chatbox = document.getElementById("chatbox");
+			chatbox.style.display = "none";
+			var chatboxOpen = document.getElementById("chatboxOpen");
+			var chatboxClose = document.getElementById("chatboxClose");
+
+			chatboxOpen.addEventListener("click", function () {
+				chatboxSwitch.style.display = "none";
+				chatbox.style.display = "block";
+			});
+			chatboxClose.addEventListener("click", function () {
+				chatboxSwitch.style.display = "none";
+			});
+
+			connection.on("ReceiveMessage", function (messageId) {
+				ReceiveMsg(messageId);
+			});
+
+			async function ReceiveMsg(messageId) {
+				var data = await getMessageById(messageId);
+				oppositeUserId = data.senderId;
+
+				if (chatboxSwitch.style.display == "none" && chatbox.style.display == "none") {
+					chatboxSwitch.style.display = "block";
+
+				}
+				if (chatbox.style.display == "block") {
+
+
+				}
+			}
+
+
+
+
+
+			async function callGetUserId(user) {
+				oppositeUserId = await getUserId(user);
+				console.log("Opposite User ID:", oppositeUserId);
+			}
+		</script>
 	}
-	<script>
-
-		var oppositeUserId = null;
-
-		connection.on("ReceiveMessage", function (messageId) {
 
 
-	
-
-			// const li = document.createElement("li");
-			// li.textContent = msg;
-			// chatArea.appendChild(li);
-		});
-
-		async function callGetUserId(user) {
-			oppositeUserId = await getUserId(user);
-			console.log("Opposite User ID:", oppositeUserId);
-		}
-	</script>
 
 	<footer class="border-top footer text-muted">
 		<div class="container">
@@ -137,7 +172,7 @@
 	</script>
 
 
-	
+
 
 </body>
 </html>

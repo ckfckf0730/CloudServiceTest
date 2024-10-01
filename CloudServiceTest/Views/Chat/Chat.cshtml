@@ -19,6 +19,7 @@
 	.chat-area {
 		width: 100%;
 		height: 400px;
+		overflow-y: auto;
 		background-color: yellowgreen;
 	}
 
@@ -159,6 +160,7 @@
 				chatArea.appendChild(li);
 			}
 		});
+		chatArea.scrollTop = chatArea.scrollHeight
 	}
 
 </script>
