@@ -8,7 +8,7 @@
 
 	.left-div {
 		width: 35%;
-		background-color: lightblue;
+		background-color: lightgoldenrodyellow;
 	}
 
 	.right-div {
@@ -20,7 +20,7 @@
 		width: 100%;
 		height: 400px;
 		overflow-y: auto;
-		background-color: yellowgreen;
+		background-color: lightblue;
 	}
 
 	.input-area {
@@ -45,7 +45,7 @@
 
 	<div class="right-div">
 		<h4 id="OppositeUser" style="text-align: center;">Name</h4>
-		<div class="chat-area" id="charArea">
+		<div class="chat-area" id="chatArea">
 		<!-- Messages will appear here -->
 		</div>
 		<textarea class="input-area" id="inputArea"></textarea>
@@ -65,7 +65,7 @@
 
 	var selectUserButtons = document.querySelectorAll(".SelectUser");
 	var oppositeUserName = document.getElementById("OppositeUser");
-	var chatArea = document.getElementById("charArea");
+	var chatArea = document.getElementById("chatArea");
 	var inputArea = document.getElementById("inputArea");
 	var oppositeUserId = null;
 	var sendButton = document.getElementById("SendMessage");
@@ -93,7 +93,9 @@
 			return;
 		}
 
-		connection.invoke("SendMessage", '@Model.SelfUser.Id', oppositeUserId, inputArea.value).catch(function (err) {
+		let message = inputArea.value;
+		inputArea.value = '';
+		connection.invoke("SendMessage", '@Model.SelfUser.Id', oppositeUserId, message).catch(function (err) {
 			return console.error(err.toString());
 		});
 
@@ -123,17 +125,27 @@
 	{
 		const msg = 'You: ' + data.content + "<br>" + data.dateTime;
 		const li = document.createElement("li");
-		li.style = "text-align: right;"
-		li.innerHTML = msg;
+		li.style.textAlign = "right";
+		const span = document.createElement("span");
+		span.innerHTML = msg;
+		span.style.backgroundColor = "lightgreen";
+		li.appendChild(span);
 		chatArea.appendChild(li);
+
+		chatArea.scrollTop = chatArea.scrollHeight;
 	}
 
 	function ShowReceiveMessage(data)
 	{
 		const li = document.createElement("li");
-		let msg = data.senderName + ": " + data.content + "<br>" + data.dateTime;
-		li.innerHTML = msg;
+		let msg = "Opposite: " + data.content + "<br>" + data.dateTime;
+		const span = document.createElement("span");
+		span.innerHTML = msg;
+		span.style.backgroundColor = "white";
+		li.appendChild(span);
 		chatArea.appendChild(li);
+
+		chatArea.scrollTop = chatArea.scrollHeight;
 	}
 
 	function RefreshChatArea() {
@@ -147,20 +159,13 @@
 
 		list.forEach(function (item) {
 			if ("@Model.SelfUser.Id" == item.senderId) {
-				const msg = 'You: ' + item.content + "<br>" + item.dateTime;
-				const li = document.createElement("li");
-				li.style = "text-align: right;"
-				li.innerHTML = msg;
-				chatArea.appendChild(li);
+				ShowSendMessage(item);
 			}
 			if ("@Model.SelfUser.Id" == item.receiverId) {
-				const li = document.createElement("li");
-				let msg = "Opposite: " + item.content + "<br>" + item.dateTime;
-				li.innerHTML = msg;
-				chatArea.appendChild(li);
+				ShowReceiveMessage(item);
 			}
 		});
-		chatArea.scrollTop = chatArea.scrollHeight
+		chatArea.scrollTop = chatArea.scrollHeight;
 	}
 
 </script>

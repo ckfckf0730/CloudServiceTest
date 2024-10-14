@@ -132,6 +132,7 @@ body {
 .chat-content {
     flex-grow: 1;
     padding: 10px;
+    height: 300px;
     overflow-y: auto;
 }
 

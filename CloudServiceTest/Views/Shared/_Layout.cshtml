@@ -1,4 +1,7 @@
-﻿<!DOCTYPE html>
+﻿@using Microsoft.AspNetCore.Identity
+@inject UserManager<ApplicationUser> UserManager
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
 	<meta charset="utf-8" />
@@ -84,7 +87,7 @@
 	@* floating chat box *@
 	@if (ViewBag.DisableChatBox != true)
 	{
-		<div id="chatboxSwitch" class="chatbox">
+		<div id="chatboxSwitch" class="chatbox" data-chatID="" data-chatName="">
 			<p>You have a new message.</p>
 			<button id="chatboxOpen">open</button>
 			<button id="chatboxClose">X</button>
@@ -92,8 +95,7 @@
 
 		<div id="chatbox" class="chatbox">
 			<div class="chat-header">
-				<span>Chat with Admin</span>
-				<span id="oppositeUserName"></span>
+				<span id="chatOpposite">Chat with Admin</span>
 				<button id="closeChat">X</button>
 			</div>
 			<div class="chat-content" id="chatContent">
@@ -114,10 +116,58 @@
 			chatbox.style.display = "none";
 			var chatboxOpen = document.getElementById("chatboxOpen");
 			var chatboxClose = document.getElementById("chatboxClose");
+			var chatOpposite = document.getElementById("chatOpposite");
+			var chatContent = document.getElementById("chatContent");
+			var sendButton = document.getElementById("sendButton");
+			var messageInput = document.getElementById("messageInput");
+
+
+			sendButton.addEventListener("click", function () {
+				sendMessage();
+			});
+
+			function sendMessage() {
+				if (messageInput.value === null || messageInput.value === '') {
+					return;
+				}
+
+				let message = messageInput.value;
+				messageInput.value = '';
+				connection.invoke("SendMessage", '@UserManager.GetUserId(User)', oppositeUserId, message).catch(function (err) {
+					return console.error(err.toString());
+				});
+
+			}
+
+			connection.on("ReceiveMessage", function (messageId) {
+				callGetMessageById(messageId);
+			});
+
+			async function callGetMessageById(messageId) {
+				data = await getMessageById(messageId);
+
+				if (oppositeUserId != data.senderId && oppositeUserId != data.receiverId) {
+					return;
+				}
+
+				let selfID = '@UserManager.GetUserId(User)';
+				if (selfID == data.senderId) {
+					ShowSendMessage(data);
+				}
+				if (selfID == data.receiverId) {
+					ShowReceiveMessage(data);
+				}
+
+			}
 
 			chatboxOpen.addEventListener("click", function () {
+				oppositeUserId = chatboxSwitch.dataset.chatID;
+
 				chatboxSwitch.style.display = "none";
 				chatbox.style.display = "block";
+				chatOpposite.innerHTML = "CHat with: " + chatboxSwitch.dataset.chatName;
+
+				RefreshChatArea();
 			});
 			chatboxClose.addEventListener("click", function () {
 				chatboxSwitch.style.display = "none";
@@ -129,11 +179,11 @@
 
 			async function ReceiveMsg(messageId) {
 				var data = await getMessageById(messageId);
-				oppositeUserId = data.senderId;
 
 				if (chatboxSwitch.style.display == "none" && chatbox.style.display == "none") {
 					chatboxSwitch.style.display = "block";
-
+					chatboxSwitch.dataset.chatID = data.senderId;
+					chatboxSwitch.dataset.chatName = data.senderName;
 				}
 				if (chatbox.style.display == "block") {
 
@@ -142,8 +192,71 @@
 			}
 
 			async function callGetUserId(user) {
-				oppositeUserId = await getUserId(user);
+				//oppositeUserId = await getUserId(user);
 				console.log("Opposite User ID:", oppositeUserId);
+			}
+
+			function RefreshChatArea() {
+				chatContent.innerHTML = '';
+
+				console.log('@UserManager.GetUserId(User)');
+				callGetMessagesOfTwoUser('@UserManager.GetUserId(User)', oppositeUserId);
+			}
+
+			function ShowSendMessage(data) {
+				let date = new Date(data.dateTime);
+
+				let hours = date.getHours().toString().padStart(2, '0');
+				let minutes = date.getMinutes().toString().padStart(2, '0');
+				let seconds = date.getSeconds().toString().padStart(2, '0');
+
+				let formattedTime = `${hours}:${minutes}:${seconds}`;
+
+				const msg = 'You: ' + data.content + "<br>" + formattedTime;
+				const li = document.createElement("li");
+				li.style.textAlign = "right";
+				const span = document.createElement("span");
+				span.innerHTML = msg;
+				span.style.backgroundColor = "lightgreen";
+				li.appendChild(span);
+				chatContent.appendChild(li);
+
+				chatContent.scrollTop = chatContent.scrollHeight;
+			}
+
+			function ShowReceiveMessage(data) {
+				let date = new Date(data.dateTime);
+
+				let hours = date.getHours().toString().padStart(2, '0');
+				let minutes = date.getMinutes().toString().padStart(2, '0');
+				let seconds = date.getSeconds().toString().padStart(2, '0');
+
+				let formattedTime = `${hours}:${minutes}:${seconds}`;
+
+				const li = document.createElement("li");
+				let msg = "Opposite: " + data.content + "<br>" + formattedTime;
+				const span = document.createElement("span");
+				span.innerHTML = msg;
+				span.style.backgroundColor = "white";
+				li.appendChild(span);
+				chatContent.appendChild(li);
+
+				chatContent.scrollTop = chatContent.scrollHeight;
+			}
+
+			async function callGetMessagesOfTwoUser(selfId, oppositeUserId) {
+				list = await getMessagesOfTwoUser(selfId, oppositeUserId);
+				var selfId = '@UserManager.GetUserId(User)';
+
+				list.forEach(function (item) {
+					if (selfId == item.senderId) {
+						ShowSendMessage(item);
+					}
+					if (selfId == item.receiverId) {
+						ShowReceiveMessage(item);
+					}
+				});
+				chatContent.scrollTop = chatContent.scrollHeight
 			}
 		</script>
 	}

@@ -13,6 +13,7 @@ Azure Storage<br>
 Azure Computer Vision<br>
 Azure Bing Search<br>
 SixLabors.ImageSharp<br>
+AspNetCore.SignalR<br>
 <br>
 アップロードされたリストのページを展示します：<br>
 ![describe1](https://github.com/ckfckf0730/CloudServiceTest/blob/main/readme/presentation01.png)<br>
@@ -76,5 +77,14 @@ SaveChanges、Transactionのroll back機能は、マルチスレッド環境で�
 そのためDatabaseServiceの依存性注入はSingletonではなく、Scoped又はTransientを選ばなければなりません。<br>
 他のサービスはまだ競合が発生するロジックが見えないが、もし実際発表のプロジェクトなら、よくテストしなければなりません。<br>
 ![describe1](https://github.com/ckfckf0730/CloudServiceTest/blob/main/readme/ServiceInjection.png)<br>
+<br>
+***
+Chat機能の実現：<br>
+Chatページとlayoutのフローティング・ウィンドウ両方も、この機能実現しました。
+![describe1](https://github.com/ckfckf0730/CloudServiceTest/blob/main/readme/Chat01.png)<br>
+![describe1](https://github.com/ckfckf0730/CloudServiceTest/blob/main/readme/Chat02.png)<br>
+Microsoft.AspNetCore.SignalR使用して、非chatページでサーフィンする時、他のユーザにメッセージをもらいましたら、<br>
+フローティング・ウィンドウが出て、新しいメッセージが着信したのを通知し、その内容のご覧と送信もできる。<br>
+メッセージの内容は、データベースに探します。<br>
 <br>
 <br>
