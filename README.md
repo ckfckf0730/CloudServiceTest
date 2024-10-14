@@ -22,7 +22,7 @@ AspNetCore.SignalR<br>
 実装された機能と学習体験：<br>
 <br>
 ***
-本地データベースの構築と応用：<br>
+地元データベースの構築と応用：<br>
 <br>
 Microsoft SQL Serverをインストールし、プロジェクトとこのデータベースのリンクを設定します。<br>
 Asp.NET CoreのEntity Framework Code Firstの特徴を活用し、C#でデータ形式を構築するだけで、<br>
