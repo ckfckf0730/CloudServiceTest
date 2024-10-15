@@ -1,4 +1,4 @@
-﻿@model CloudServiceTest.Models.Azure.ThumbnailViewModel 
+﻿@* @model CloudServiceTest.Models.Azure.ThumbnailViewModel  *@
 
 <h2>All your uploaded pictures</h2>
 
@@ -6,25 +6,134 @@
 <button id="sortByTag">Sort by Tag</button>
 
 <div id="container">
-@foreach (var data in Model.DataList)
-{
-    <div class="sortable-item" data-name="@data.Name" data-tag="@data.Tag" style="border: 2px solid black;">
-        <a href="/Azure/DisplayImage?guid=@data.ResId">
-            <img src="@data.ImageSrc" alt="Image from Azure" style="max-width: 200px; margin: 10px;" />
-        </a>    
-        <p>@data.Name</p>
-        <p>Tag:@data.Tag</p>
-        <a href="/Azure/DownloadAndSave?guid=@data.ResId" class="btn btn-primary">Download File</a>
-        <form asp-controller="Azure" asp-action="DeleteFile" method="post">
-            <input type="hidden" name="guid" value="@data.ResId" />
-            <button type="submit" class="btn btn-primaryred">Delete File</button>
-        </form>
-    </div>
+@* 	@foreach (var data in Model.DataList)
+	{
+		<div class="sortable-item" data-name="@data.Name" data-tag="@data.Tag" style="border: 2px solid black;">
+			<a href="/Azure/DisplayImage?guid=@data.ResId">
+				<img src="@data.ImageSrc" alt="Image from Azure" style="max-width: 200px; margin: 10px;" />
+			</a>
+			<p>@data.Name</p>
+			<p>Tag:@data.Tag</p>
+			<a href="/Azure/DownloadAndSave?guid=@data.ResId" class="btn btn-primary">Download File</a>
+			<form asp-controller="Azure" asp-action="DeleteFile" method="post">
+				<input type="hidden" name="guid" value="@data.ResId" />
+				<button type="submit" class="btn btn-primaryred">Delete File</button>
+			</form>
+		</div>
 
-}
+	} *@
 </div>>
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+	fetch('/Azure/StreamThumbnailData')
+		.then(response => {
+			const reader = response.body.getReader();
+			const decoder = new TextDecoder('utf-8');
+			let buffer = ''
+
+			function read() {
+				reader.read().then(({ done, value }) => {
+					if (done) {
+						console.log('Stream complete');
+						return;
+					}
+
+					// 解码流数据并显示
+					const text = decoder.decode(value);
+					buffer += text;
+					if (buffer.endsWith("\n")) {
+						try {
+							//console.log(buffer);
+							const dataItem = JSON.parse(buffer);
+							createOne(dataItem);
+							buffer = '';
+							//console.log(dataItem.name);
+
+						}
+						catch (e) {
+							console.error('Error parsing JSON:', e);
+						}
+					}
+
+					
+
+					// 继续读取下一个数据块
+					read();
+				});
+			}
+
+			// 开始读取流数据
+			read();
+		})
+		.catch(error => {
+			console.error('Error fetching stream data:', error);
+		});
+
+	var container = document.getElementById("container");
+
+	function createOne(dataItem) {
+		// 创建最外层的 div
+		const itemDiv = document.createElement('div');
+		itemDiv.className = 'sortable-item';
+		itemDiv.setAttribute('data-name', dataItem.name);
+		itemDiv.setAttribute('data-tag', dataItem.tag);
+		itemDiv.style.border = '2px solid black';
+		container.appendChild(itemDiv);
+
+		// 创建链接
+		const link = document.createElement('a');
+		link.href = `/Azure/DisplayImage?guid=${dataItem.ResId}`;
+
+		// 创建图片
+		const img = document.createElement('img');
+		img.src = dataItem.imageSrc;
+		img.alt = 'Image from Azure';
+		img.style.maxWidth = '200px';
+		img.style.margin = '10px';
+		link.appendChild(img);
+
+		// 创建名字和标签
+		const nameParagraph = document.createElement('p');
+		nameParagraph.textContent = dataItem.name;
+
+		const tagParagraph = document.createElement('p');
+		tagParagraph.textContent = `Tag: ${dataItem.tag}`;
+
+		// 创建下载链接
+		const downloadLink = document.createElement('a');
+		downloadLink.href = `/Azure/DownloadAndSave?guid=${dataItem.resId}`;
+		downloadLink.className = 'btn btn-primary';
+		downloadLink.textContent = 'Download File';
+
+		// 创建删除表单
+		const form = document.createElement('form');
+		form.setAttribute('action', '/Azure/DeleteFile');
+		form.setAttribute('method', 'post');
+
+		const hiddenInput = document.createElement('input');
+		hiddenInput.type = 'hidden';
+		hiddenInput.name = 'guid';
+		hiddenInput.value = dataItem.ResId;
+		form.appendChild(hiddenInput);
+
+		const deleteButton = document.createElement('button');
+		deleteButton.type = 'submit';
+		deleteButton.className = 'btn btn-primaryred';
+		deleteButton.textContent = 'Delete File';
+		form.appendChild(deleteButton);
+
+		// 将所有元素添加到 itemDiv 中
+		itemDiv.appendChild(link);
+		itemDiv.appendChild(nameParagraph);
+		itemDiv.appendChild(tagParagraph);
+		itemDiv.appendChild(downloadLink);
+		itemDiv.appendChild(form);
+
+	}
+</script>
+
+
+@* <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
     $(document).ready(function () {
         // 按名称排序
@@ -58,7 +167,7 @@
     <p>@Model.BingSearchImage.name</p>
 </div>
 
-
+ *@
 
 
 

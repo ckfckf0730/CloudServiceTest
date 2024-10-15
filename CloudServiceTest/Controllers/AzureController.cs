@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Identity;
 using CloudServiceTest.Models.Database;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using CloudServiceTest.Models.Azure;
+using Newtonsoft.Json;
+using Azure;
 
 public class AzureController : Controller
 {
@@ -45,58 +47,132 @@ public class AzureController : Controller
             return View("CommonResult", errorModel);
         }
 
-        ThumbnailViewModel model = new ThumbnailViewModel();
-        model.DataList = new List<ThumbnailData>();
+        //ThumbnailViewModel model = new ThumbnailViewModel();
+        //model.DataList = new List<ThumbnailData>();
 
-        var list = _databaseService.LoadFileRecord(userName);
-        foreach (var item in list)
-        {
-            var stream = DownLoadFromAzure(item.ThumbnailId.ToString());
-            if (stream == null)
-            {
-                continue;
-            }
-            using (var memoryStream = new MemoryStream())
-            {
-                stream.CopyTo(memoryStream);
-                var imageBytes = memoryStream.ToArray();
-                var base64String = Convert.ToBase64String(imageBytes);
+        //var list = _databaseService.LoadFileRecord(userName);
+        //foreach (var item in list)
+        //{
+        //    var stream = DownLoadFromAzure(item.ThumbnailId.ToString());
+        //    if (stream == null)
+        //    {
+        //        continue;
+        //    }
+        //    using (var memoryStream = new MemoryStream())
+        //    {
+        //        stream.CopyTo(memoryStream);
+        //        var imageBytes = memoryStream.ToArray();
+        //        var base64String = Convert.ToBase64String(imageBytes);
 
-                var fileExtension = Path.GetExtension(item.FileName).ToLower();
-                string mimeType = fileExtension switch
-                {
-                    ".jpg" or ".jpeg" => "image/jpeg",
-                    ".png" => "image/png",
-                    ".gif" => "image/gif",
-                    ".bmp" => "image/bmp",
-                    _ => "application/octet-stream"  // 默认 MIME 类型，处理未知的扩展名
-                };
+        //        var fileExtension = Path.GetExtension(item.FileName).ToLower();
+        //        string mimeType = fileExtension switch
+        //        {
+        //            ".jpg" or ".jpeg" => "image/jpeg",
+        //            ".png" => "image/png",
+        //            ".gif" => "image/gif",
+        //            ".bmp" => "image/bmp",
+        //            _ => "application/octet-stream"  // 默认 MIME 类型，处理未知的扩展名
+        //        };
 
-                var imageSrc = $"data:{mimeType};base64,{base64String}";
+        //        var imageSrc = $"data:{mimeType};base64,{base64String}";
 
-                ThumbnailData thumb = new ThumbnailData
-                {
-                    Name = item.FileName,
-                    ImageSrc = imageSrc,
-                    ResId = item.Id,
-                    Tag = item.Tag
-                };
-                model.DataList.Add(thumb);
-            }
-        }
+        //        ThumbnailData thumb = new ThumbnailData
+        //        {
+        //            Name = item.FileName,
+        //            ImageSrc = imageSrc,
+        //            ResId = item.Id,
+        //            Tag = item.Tag
+        //        };
+        //        model.DataList.Add(thumb);
+        //    }
+        //}
 
-        Random random = new Random();
-        int randomIndex = random.Next(0, list.Count);
-        var tag = list[randomIndex].Tag;
-        var bingResponse = await _bingSearchService.SearchAsync(tag);
-        model.BingSearchImage = new BingSearchImage();
-        if (bingResponse != null)
-        {
-            model.BingSearchImage = bingResponse;
-        }
+        //Random random = new Random();
+        //int randomIndex = random.Next(0, list.Count);
+        //var tag = list[randomIndex].Tag;
+        //var bingResponse = await _bingSearchService.SearchAsync(tag);
+        //model.BingSearchImage = new BingSearchImage();
+        //if (bingResponse != null)
+        //{
+        //    model.BingSearchImage = bingResponse;
+        //}
 
-        return View("PictureList", model);
+        return View();
+        //return View("PictureList", model);
     }
+
+    [HttpGet]
+    public async IAsyncEnumerable<string> StreamThumbnailData()
+    {
+        int maxPic = 24;
+
+        if (IsLogin(out var userName))
+        {
+            var list = _databaseService.LoadFileRecord(userName);
+
+			Response.ContentType = "application/json";
+			using var writer = new StreamWriter(Response.Body);
+
+			for (var i = 0; i < maxPic; i++)
+            {
+                if (i >= list.Count)
+                {
+					await Response.BodyWriter.CompleteAsync();
+					yield break;
+                }
+
+                var item = list[i];
+
+                var stream = await _fileStorageService.DownloadFileAsync(_azureShareFolder, item.ThumbnailId.ToString()); 
+                if (stream == null)
+                {
+                    continue;
+                }
+                string imageSrc = null;
+                using (var memoryStream = new MemoryStream())
+                {
+                    stream.CopyTo(memoryStream);
+                    var imageBytes = memoryStream.ToArray();
+                    var base64String = Convert.ToBase64String(imageBytes);
+
+                    var fileExtension = Path.GetExtension(item.FileName).ToLower();
+                    string mimeType = fileExtension switch
+                    {
+                        ".jpg" or ".jpeg" => "image/jpeg",
+                        ".png" => "image/png",
+                        ".gif" => "image/gif",
+                        ".bmp" => "image/bmp",
+                        _ => "application/octet-stream"  // 默认 MIME 类型，处理未知的扩展名
+                    };
+
+                    imageSrc = $"data:{mimeType};base64,{base64String}";
+
+                    //ThumbnailData thumb = new ThumbnailData
+                    //{
+                    //    Name = item.FileName,
+                    //    ImageSrc = imageSrc,
+                    //    ResId = item.Id,
+                    //    Tag = item.Tag
+                    //};
+                }
+
+				var data = new
+				{
+					name = item.FileName,
+					imageSrc = imageSrc,
+					resId = item.Id.ToString(),
+					tag = item.Tag
+				};
+
+
+				var json = JsonConvert.SerializeObject(data);
+				await writer.WriteAsync(json + "\n");
+				await writer.FlushAsync(); // 确保每次都立即发送
+            }
+
+			await Response.BodyWriter.CompleteAsync();
+		}
+	}
 
     private Stream? DownLoadFromAzure(string azureName)
     {
