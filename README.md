@@ -73,7 +73,7 @@ UnityのLifeCycleはメインスレッド向けで、サブスレッドのCallBa
 <br>
 注意事項は、依存性注入されるサービスは、Task使用の時、スレッド安全が重要です。<br>
 例え、このプロジェクトには、DatabaseServiceの使用時、<br>
-SaveChanges、Transactionのroll back機能は、マルチスレッド環境で競合が発生し、スレッドセーフではありません。<br>
+SaveChanges、Transactionのroll back機能は、シングルスレッド環境で競合が発生し、スレッドセーフではありません。<br>
 そのためDatabaseServiceの依存性注入はSingletonではなく、Scoped又はTransientを選ばなければなりません。<br>
 他のサービスはまだ競合が発生するロジックが見えないが、もし実際発表のプロジェクトなら、よくテストしなければなりません。<br>
 ![describe1](https://github.com/ckfckf0730/CloudServiceTest/blob/main/readme/ServiceInjection.png)<br>
@@ -88,8 +88,11 @@ Microsoft.AspNetCore.SignalR使用して、非chatページでサーフィンす
 フローティング・ウィンドウが出て、新しいメッセージが着信したのを通知し、その内容のご覧と送信もできる。<br>
 メッセージの内容は、データベースに探します。<br>
 <br>
+この機能の開発中、JavaScriptの使用練習しました。<br>
+特にfetchとある関数で、HTTP請求をして、非同期の返信の動的処理など、よく練習しました。<br>
+<br>
 ***
-縮小画像リストのデータのストリーミング：<br>
+縮小画像リストのデータがストリーミング的に転送：<br>
 <br>
 ネット速度低い、帯域幅狭い、リストの数が多いなど状況で、画像リストのページを開き遅くなる。<br>
 スムーズに閲覧するため、画像リストのページのデータは、ストリーミングで転送される方法しました。<br>
