@@ -97,7 +97,7 @@ public class AzureController : Controller
         //    model.BingSearchImage = bingResponse;
         //}
 
-        return View();
+        return View("PictureList");
         //return View("PictureList", model);
     }
 

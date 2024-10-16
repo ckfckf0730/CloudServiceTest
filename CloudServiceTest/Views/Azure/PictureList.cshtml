@@ -82,7 +82,7 @@
 
 		// 创建链接
 		const link = document.createElement('a');
-		link.href = `/Azure/DisplayImage?guid=${dataItem.ResId}`;
+		link.href = `/Azure/DisplayImage?guid=${dataItem.resId}`;
 
 		// 创建图片
 		const img = document.createElement('img');
@@ -113,7 +113,7 @@
 		const hiddenInput = document.createElement('input');
 		hiddenInput.type = 'hidden';
 		hiddenInput.name = 'guid';
-		hiddenInput.value = dataItem.ResId;
+		hiddenInput.value = dataItem.resId;
 		form.appendChild(hiddenInput);
 
 		const deleteButton = document.createElement('button');
