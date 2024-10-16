@@ -6,23 +6,17 @@
 <button id="sortByTag">Sort by Tag</button>
 
 <div id="container">
-@* 	@foreach (var data in Model.DataList)
-	{
-		<div class="sortable-item" data-name="@data.Name" data-tag="@data.Tag" style="border: 2px solid black;">
-			<a href="/Azure/DisplayImage?guid=@data.ResId">
-				<img src="@data.ImageSrc" alt="Image from Azure" style="max-width: 200px; margin: 10px;" />
-			</a>
-			<p>@data.Name</p>
-			<p>Tag:@data.Tag</p>
-			<a href="/Azure/DownloadAndSave?guid=@data.ResId" class="btn btn-primary">Download File</a>
-			<form asp-controller="Azure" asp-action="DeleteFile" method="post">
-				<input type="hidden" name="guid" value="@data.ResId" />
-				<button type="submit" class="btn btn-primaryred">Delete File</button>
-			</form>
-		</div>
 
-	} *@
 </div>>
+
+<div style="border: 2px solid blue; position: fixed; bottom: 10px; right: 10px; width: 200px; background-color: white; z-index: 1000;">
+	<p>Promote according to your preferences:</p>
+	<a id="promoteRef" href="" target="_blank">
+		<img id="promoteImg" src="" alt="Promote Picture" style="width: 100%; height: auto; object-fit: contain;">
+	</a>
+	<p id="promoteName"></p>
+</div>
+
 
 <script>
 	fetch('/Azure/StreamThumbnailData')
@@ -45,7 +39,13 @@
 						try {
 							//console.log(buffer);
 							const dataItem = JSON.parse(buffer);
-							createOne(dataItem);
+							if (dataItem.dataType == "img") {
+								createOne(dataItem);
+							}
+							else if (dataItem.dataType == "bing") {
+								createPromote(dataItem);
+							}
+
 							buffer = '';
 							//console.log(dataItem.name);
 
@@ -130,10 +130,21 @@
 		itemDiv.appendChild(form);
 
 	}
+
+	var promoteRef = document.getElementById("promoteRef");
+	var promoteImg = document.getElementById("promoteImg");
+	var promoteName = document.getElementById("promoteName");
+	function createPromote(dataItem){
+		//console.log(dataItem);
+		promoteRef.href = dataItem.webSearchUrl;
+		promoteImg.src = dataItem.thumbnailUrl;
+		promoteName.innerHTML = dataItem.name;
+	}
 </script>
 
 
-@* <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
     $(document).ready(function () {
         // 按名称排序
@@ -159,15 +170,8 @@
     <!-- 上面的 foreach 生成的 divs 都在这里 -->
 </div>
 
-<div style="border: 2px solid blue; position: fixed; bottom: 10px; right: 10px; width: 200px; background-color: white; z-index: 1000;">
-    <p>Promote according to your preferences:</p>
-    <a href=@Model.BingSearchImage.webSearchUrl target="_blank">
-        <img src=@Model.BingSearchImage?.thumbnailUrl alt="Promote Picture" style="width: 100%; height: auto; object-fit: contain;">
-    </a>
-    <p>@Model.BingSearchImage.name</p>
-</div>
 
- *@
+
 
 
 

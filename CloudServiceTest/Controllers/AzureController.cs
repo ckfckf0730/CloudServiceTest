@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using CloudServiceTest.Models.Azure;
 using Newtonsoft.Json;
 using Azure;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 public class AzureController : Controller
 {
@@ -47,58 +48,7 @@ public class AzureController : Controller
             return View("CommonResult", errorModel);
         }
 
-        //ThumbnailViewModel model = new ThumbnailViewModel();
-        //model.DataList = new List<ThumbnailData>();
-
-        //var list = _databaseService.LoadFileRecord(userName);
-        //foreach (var item in list)
-        //{
-        //    var stream = DownLoadFromAzure(item.ThumbnailId.ToString());
-        //    if (stream == null)
-        //    {
-        //        continue;
-        //    }
-        //    using (var memoryStream = new MemoryStream())
-        //    {
-        //        stream.CopyTo(memoryStream);
-        //        var imageBytes = memoryStream.ToArray();
-        //        var base64String = Convert.ToBase64String(imageBytes);
-
-        //        var fileExtension = Path.GetExtension(item.FileName).ToLower();
-        //        string mimeType = fileExtension switch
-        //        {
-        //            ".jpg" or ".jpeg" => "image/jpeg",
-        //            ".png" => "image/png",
-        //            ".gif" => "image/gif",
-        //            ".bmp" => "image/bmp",
-        //            _ => "application/octet-stream"  // 默认 MIME 类型，处理未知的扩展名
-        //        };
-
-        //        var imageSrc = $"data:{mimeType};base64,{base64String}";
-
-        //        ThumbnailData thumb = new ThumbnailData
-        //        {
-        //            Name = item.FileName,
-        //            ImageSrc = imageSrc,
-        //            ResId = item.Id,
-        //            Tag = item.Tag
-        //        };
-        //        model.DataList.Add(thumb);
-        //    }
-        //}
-
-        //Random random = new Random();
-        //int randomIndex = random.Next(0, list.Count);
-        //var tag = list[randomIndex].Tag;
-        //var bingResponse = await _bingSearchService.SearchAsync(tag);
-        //model.BingSearchImage = new BingSearchImage();
-        //if (bingResponse != null)
-        //{
-        //    model.BingSearchImage = bingResponse;
-        //}
-
         return View("PictureList");
-        //return View("PictureList", model);
     }
 
     [HttpGet]
@@ -117,8 +67,7 @@ public class AzureController : Controller
             {
                 if (i >= list.Count)
                 {
-					await Response.BodyWriter.CompleteAsync();
-					yield break;
+				    break;
                 }
 
                 var item = list[i];
@@ -158,6 +107,7 @@ public class AzureController : Controller
 
 				var data = new
 				{
+                    dataType ="img",
 					name = item.FileName,
 					imageSrc = imageSrc,
 					resId = item.Id.ToString(),
@@ -170,9 +120,29 @@ public class AzureController : Controller
 				await writer.FlushAsync(); // 确保每次都立即发送
             }
 
+            Random random = new Random();
+            int randomIndex = random.Next(0, list.Count);
+            var tag = list[randomIndex].Tag;
+            var bingResponse = await _bingSearchService.SearchAsync(tag);
+
+			var data2 = new
+			{
+				dataType = "bing",
+				webSearchUrl = bingResponse.webSearchUrl,
+				name = bingResponse.name,
+				thumbnailUrl = bingResponse.thumbnailUrl
+			};
+			var json2 = JsonConvert.SerializeObject(data2);
+			await writer.WriteAsync(json2 + "\n");
+			await writer.FlushAsync();
+
 			await Response.BodyWriter.CompleteAsync();
 		}
+
+		yield break;
 	}
+
+
 
     private Stream? DownLoadFromAzure(string azureName)
     {
