@@ -1,0 +1,12 @@
+﻿
+	
+<canvas id="glCanvas" width="640" height="480"></canvas>
+<script src="~/js/render.js"></script>
+<p>
+	@ViewData["test"]
+</p>
+
+<script>
+	initWebGL();
+	console.log(@Json.Serialize(ViewData["test"]));
+</script>

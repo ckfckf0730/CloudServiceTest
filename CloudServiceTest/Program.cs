@@ -54,7 +54,11 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseStaticFiles();
+app.UseStaticFiles(new StaticFileOptions
+{
+	ServeUnknownFileTypes = true, // 允许未知的文件类型
+	DefaultContentType = "text/plain" // 如果找不到文件类型，则使用文本类型
+});
 
 app.UseRouting();
 
