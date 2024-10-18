@@ -94,7 +94,8 @@ async function initWebGL() {
     createVertexBuffer();
 }
 
-function createVertexBuffer() {     
+function createVertexBuffer() { 
+    console.error(vertices)
     if (vertices == null) {
         console.error("Failed to load vertices");
         return;
@@ -130,11 +131,7 @@ function createVertexBuffer() {
     );
     gl.enableVertexAttribArray(colorAttributeLocation);
 
-    gl.clearColor(1.0, 1.0, 0.0, 1.0);
-
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);    
-
-    gl.drawArrays(gl.TRIANGLES, 0, vertices.length / 7);
+    gl.drawArrays(gl.TRIANGLES, 0, vertices.length / 3);
 
     const error = gl.getError();
     if (error !== gl.NO_ERROR) {

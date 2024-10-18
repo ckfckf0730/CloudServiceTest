@@ -7,6 +7,11 @@
 </p>
 
 <script>
+	var vertices = JSON.parse(@Json.Serialize(ViewData["test"]));
+
+	initVertices(vertices);
 	initWebGL();
-	console.log(@Json.Serialize(ViewData["test"]));
+
+
+
 </script>
