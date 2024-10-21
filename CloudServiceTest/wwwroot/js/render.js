@@ -7,6 +7,11 @@ var shaderProgram;
 
 var models = [];
 
+var camera = {} ;
+camera.position = [0.5, 0, -2];
+camera.lookAt = [0.5, 0, 0];
+camera.up = [0, 1, 0];
+
 if (!gl) {
     console.error("WebGL isn't supported in this browser.");
 } else {
@@ -17,10 +22,10 @@ gl.clearColor(1.0, 1.0, 0.0, 1.0);
 
 gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-gl.enable(gl.CULL_FACE); // 启用面剔除
+gl.enable(gl.CULL_FACE); 
 gl.cullFace(gl.BACK);
 
-gl.frontFace(gl.CW);
+gl.frontFace(gl.CCW);
 
 function initVertices(data) {
     console.log(data);
@@ -152,6 +157,23 @@ function createVertexBuffer(model) {
     );
     gl.enableVertexAttribArray(colorAttributeLocation);
 
+    //set root parameter
+    let worldMatrix = getWorldMat([0.1, 0, 0], [0, 0, 0.1], [1, 1, 1]);
+    const uWorldMatrixLocation = gl.getUniformLocation(shaderProgram, "uWorldMatrix");
+    gl.uniformMatrix4fv(uWorldMatrixLocation, false, worldMatrix);
+
+    const viewMatrix = mat4.create(); 
+    mat4.lookAt(viewMatrix, camera.position, camera.lookAt, camera.up);
+    console.log(viewMatrix);
+    const uViewMatrixLocation = gl.getUniformLocation(shaderProgram, "uViewMatrix");
+    gl.uniformMatrix4fv(uViewMatrixLocation, false, viewMatrix);
+
+    const projectionMatrix = mat4.create(); 
+    mat4.perspective(projectionMatrix, Math.PI / 4, canvas.width / canvas.height, 0.1, 100);
+    const uProjectionMatrixLocation = gl.getUniformLocation(shaderProgram, "uProjectionMatrix");
+    gl.uniformMatrix4fv(uProjectionMatrixLocation, false, projectionMatrix);
+
+
     gl.clearColor(1.0, 1.0, 0.0, 1.0);
 
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);    
@@ -168,4 +190,34 @@ function createVertexBuffer(model) {
     if (error !== gl.NO_ERROR) {
         console.error('WebGL Error:', error);
     }
+}
+
+//position, rotation, scale are int arrays
+function getWorldMat(position, rotation, scale) {
+    const worldMat = mat4.create();
+        //mat4.scale(worldMat, worldMat, scale);
+
+        //mat4.rotateY(worldMat, worldMat, rotation[1]);
+        //mat4.rotateX(worldMat, worldMat, rotation[0]);
+        //mat4.rotateZ(worldMat, worldMat, rotation[2]);
+
+        //mat4.translate(worldMat, worldMat, position);
+
+    return worldMat;
+}
+
+function getProjectionMat() {
+    const matrix = mat4.create();
+
+
+}
+
+function setMats() {
+
+}
+
+function render() {
+
+
+
 }

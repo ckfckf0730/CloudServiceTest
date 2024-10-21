@@ -1,6 +1,7 @@
 ﻿
 	
 <canvas id="glCanvas" width="640" height="480"></canvas>
+<script src="~/js/gl-matrix.js"></script>
 <script src="~/js/render.js"></script>
 <p>
 	@ViewData["test"]
@@ -12,6 +13,21 @@
 	initVertices(vertices);
 	initWebGL();
 
+	var lastTime = 0;
 
+	function renderLoop(time)
+	{
+		const deltaTime = time - lastTime;
+		lastTime = time;
 
+		update(deltaTime);
+
+		requestAnimationFrame(renderLoop);
+	}
+
+	function update(deltaTime) {
+		
+	}
+		
+	requestAnimationFrame(renderLoop);
 </script>
