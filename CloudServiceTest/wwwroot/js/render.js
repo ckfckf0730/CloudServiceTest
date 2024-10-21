@@ -5,11 +5,7 @@ var gl = canvas.getContext('webgl');
 
 var shaderProgram;
 
-var vertices = null;
-
-function initVertices(data) {
-    vertices = data;
-}
+var models = [];
 
 if (!gl) {
     console.error("WebGL isn't supported in this browser.");
@@ -17,9 +13,32 @@ if (!gl) {
     console.log("WebGL is successfully initialized.");
 }
 
-gl.clearColor(1.0, 1.0, 0.0, 1.0); 
-    
+gl.clearColor(1.0, 1.0, 0.0, 1.0);
+
 gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+gl.enable(gl.CULL_FACE); // 启用面剔除
+gl.cullFace(gl.BACK);
+
+gl.frontFace(gl.CW);
+
+function initVertices(data) {
+    console.log(data);
+    let vers = [];
+    data.vertices.forEach(function (vertex,index) {
+        vers.push(vertex.position.X);
+        vers.push(vertex.position.Y);
+        vers.push(vertex.position.Z);
+        vers.push(vertex.color.X);
+        vers.push(vertex.color.Y);
+        vers.push(vertex.color.Z);
+        vers.push(vertex.color.W);
+    });
+    models.push({ vertices: vers, indices: data.indices });
+    console.log(models);
+}
+
+
 
 async function loadShaderFile(url) {
     try {
@@ -91,19 +110,22 @@ async function initWebGL() {
 
     // Continue with WebGL setup and rendering...
 
-    createVertexBuffer();
+    createVertexBuffer(models[0]);
 }
 
-function createVertexBuffer() {     
-    if (vertices == null) {
-        console.error("Failed to load vertices");
-        return;
-    }
+function createVertexBuffer(model) {     
+    let vertices = model.vertices;
+    let indices = model.indices;
 
+    //create vertex buffer
     const vertexBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+
+    //create index buffer
+    const indexBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
 
     const positionAttributeLocation = gl.getAttribLocation(shaderProgram, 'aPosition');
     const colorAttributeLocation = gl.getAttribLocation(shaderProgram, 'aColor');
@@ -111,22 +133,22 @@ function createVertexBuffer() {
     // 设置 position 属性指针
     gl.vertexAttribPointer(
         positionAttributeLocation,
-        3,          // 每个顶点有3个值 (x, y, z)
-        gl.FLOAT,   // 每个值的类型是32位浮点型
-        false,      // 不需要标准化
-        7 * Float32Array.BYTES_PER_ELEMENT, // 每个顶点的步长为7个FLOAT（position和color的总大小）
-        0           // 数据起点
+        3,          // position's (x, y, z)
+        gl.FLOAT,   
+        false,      // no need for standardization
+        7 * Float32Array.BYTES_PER_ELEMENT, // per vertex's lenth
+        0           // offset
     );
     gl.enableVertexAttribArray(positionAttributeLocation);
 
     // 设置 color 属性指针
     gl.vertexAttribPointer(
         colorAttributeLocation,
-        4,                  // 每个顶点的 color 部分有4个值 (r, g, b, a)
-        gl.FLOAT,           // 每个值的类型是32位浮点型
-        false,              // 不需要标准化
-        7 * Float32Array.BYTES_PER_ELEMENT, // 每个顶点的步长为7个FLOAT（position和color的总大小）
-        3 * Float32Array.BYTES_PER_ELEMENT  // color 数据从第4个FLOAT（position后的第1个位置）开始
+        4,                  //  color's (r, g, b, a)
+        gl.FLOAT,           
+        false,              // no need for standardization
+        7 * Float32Array.BYTES_PER_ELEMENT, // per vertex's lenth
+        3 * Float32Array.BYTES_PER_ELEMENT  // offset
     );
     gl.enableVertexAttribArray(colorAttributeLocation);
 
@@ -134,7 +156,13 @@ function createVertexBuffer() {
 
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);    
 
-    gl.drawArrays(gl.TRIANGLES, 0, vertices.length / 7);
+    //gl.drawArrays(gl.TRIANGLES, 0, vertices.length / 7);
+    gl.drawElements(
+        gl.TRIANGLES,      // draw mode: triangle
+        indices.length,    
+        gl.UNSIGNED_SHORT, 
+        0                  // offset
+    );
 
     const error = gl.getError();
     if (error !== gl.NO_ERROR) {

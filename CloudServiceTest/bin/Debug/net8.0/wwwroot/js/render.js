@@ -5,10 +5,22 @@ var gl = canvas.getContext('webgl');
 
 var shaderProgram;
 
-var vertices = null;
+var models = [];
 
 function initVertices(data) {
-    vertices = data;
+    console.log(data);
+    let vers = [];
+    data.forEach(function (vertex,index) {
+        vers.push(vertex.position.X);
+        vers.push(vertex.position.Y);
+        vers.push(vertex.position.Z);
+        vers.push(vertex.color.X);
+        vers.push(vertex.color.Y);
+        vers.push(vertex.color.Z);
+        vers.push(vertex.color.W);
+    });
+    models.push({ vertices: vers });
+    console.log(models);
 }
 
 if (!gl) {
@@ -20,6 +32,11 @@ if (!gl) {
 gl.clearColor(1.0, 1.0, 0.0, 1.0); 
     
 gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+gl.enable(gl.CULL_FACE); // 启用面剔除
+gl.cullFace(gl.BACK);
+
+gl.frontFace(gl.CW);
 
 async function loadShaderFile(url) {
     try {
@@ -91,11 +108,10 @@ async function initWebGL() {
 
     // Continue with WebGL setup and rendering...
 
-    createVertexBuffer();
+    createVertexBuffer(models[0].vertices);
 }
 
-function createVertexBuffer() { 
-    console.error(vertices)
+function createVertexBuffer(vertices) {     
     if (vertices == null) {
         console.error("Failed to load vertices");
         return;
@@ -131,7 +147,11 @@ function createVertexBuffer() {
     );
     gl.enableVertexAttribArray(colorAttributeLocation);
 
-    gl.drawArrays(gl.TRIANGLES, 0, vertices.length / 3);
+    gl.clearColor(1.0, 1.0, 0.0, 1.0);
+
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);    
+
+    gl.drawArrays(gl.TRIANGLES, 0, vertices.length / 7);
 
     const error = gl.getError();
     if (error !== gl.NO_ERROR) {
