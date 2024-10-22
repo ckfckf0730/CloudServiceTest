@@ -9,6 +9,7 @@ namespace CloudServiceTest.Controllers
 		public struct TestVertex
 		{
 			public Vector3 position;
+			public Vector3 normal;
 			public Vector4 color;
 		}
 
@@ -20,6 +21,11 @@ namespace CloudServiceTest.Controllers
 			vertices[1].position = new Vector3(0.2f, -0.2f, 0);
 			vertices[2].position = new Vector3(-0.2f, -0.2f, 0);
 			vertices[3].position = new Vector3(0.2f, 0.2f, 0);
+
+			vertices[0].normal = new Vector3(1, 1, -1);
+			vertices[1].normal = new Vector3(1, 1, -1);
+			vertices[2].normal = new Vector3(1, 1, -1);
+			vertices[3].normal = new Vector3(1, 1, -1);
 
 			for (int i = 0; i < vertices.Length; i++)
 			{

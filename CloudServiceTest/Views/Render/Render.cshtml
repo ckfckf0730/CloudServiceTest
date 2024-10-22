@@ -10,8 +10,7 @@
 <script>
 	var vertices = JSON.parse(@Json.Serialize(ViewData["test"]));
 
-	initVertices(vertices);
-	initWebGL();
+	startInit();
 
 	var lastTime = 0;
 
@@ -26,8 +25,16 @@
 	}
 
 	function update(deltaTime) {
-		
+		testRoot(deltaTime);
 	}
 		
-	requestAnimationFrame(renderLoop);
+
+
+	async function startInit() {
+		initVertices(vertices);
+		await initWebGL();
+
+		requestAnimationFrame(renderLoop);
+	}
+
 </script>

@@ -6,6 +6,24 @@ var gl = canvas.getContext('webgl');
 var shaderProgram;
 
 var models = [];
+var objects = [];
+
+
+class Object3D {
+    constructor(gl, shaderProgram) {
+        this.position = [0, 0, 0];
+        this.rotation = [0, 0, 0];
+        this.scale = [1, 1, 1];
+        this.uWorldMatrixLocation = gl.getUniformLocation(shaderProgram, "uWorldMatrix");
+    }
+
+
+}
+
+var camera = {} ;
+camera.position = [0, 0, -2];
+camera.lookAt = [0, 0, 0];
+camera.up = [0, 1, 0];
 
 if (!gl) {
     console.error("WebGL isn't supported in this browser.");
@@ -17,7 +35,7 @@ gl.clearColor(1.0, 1.0, 0.0, 1.0);
 
 gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-gl.enable(gl.CULL_FACE); // 启用面剔除
+gl.enable(gl.CULL_FACE); 
 gl.cullFace(gl.BACK);
 
 gl.frontFace(gl.CW);
@@ -29,6 +47,9 @@ function initVertices(data) {
         vers.push(vertex.position.X);
         vers.push(vertex.position.Y);
         vers.push(vertex.position.Z);
+        vers.push(vertex.normal.X);
+        vers.push(vertex.normal.Y);
+        vers.push(vertex.normal.Z);
         vers.push(vertex.color.X);
         vers.push(vertex.color.Y);
         vers.push(vertex.color.Z);
@@ -37,8 +58,6 @@ function initVertices(data) {
     models.push({ vertices: vers, indices: data.indices });
     console.log(models);
 }
-
-
 
 async function loadShaderFile(url) {
     try {
@@ -128,18 +147,34 @@ function createVertexBuffer(model) {
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
 
     const positionAttributeLocation = gl.getAttribLocation(shaderProgram, 'aPosition');
+    const normalAttributeLocation = gl.getAttribLocation(shaderProgram, 'aNormal');
     const colorAttributeLocation = gl.getAttribLocation(shaderProgram, 'aColor');
+
+    let vertexSize = 10 * Float32Array.BYTES_PER_ELEMENT;
+
 
     // 设置 position 属性指针
     gl.vertexAttribPointer(
         positionAttributeLocation,
-        3,          // position's (x, y, z)
+        3,          // position's (x, y, z) 
         gl.FLOAT,   
         false,      // no need for standardization
-        7 * Float32Array.BYTES_PER_ELEMENT, // per vertex's lenth
+        vertexSize, // per vertex's lenth
         0           // offset
     );
     gl.enableVertexAttribArray(positionAttributeLocation);
+
+    // 设置 normal 属性指针
+    gl.vertexAttribPointer(
+        normalAttributeLocation,
+        3,          // normal's (x, y, z)
+        gl.FLOAT,
+        false,      // no need for standardization
+        vertexSize, // per vertex's lenth
+        3           // offset
+    );
+    gl.enableVertexAttribArray(normalAttributeLocation);
+
 
     // 设置 color 属性指针
     gl.vertexAttribPointer(
@@ -147,15 +182,27 @@ function createVertexBuffer(model) {
         4,                  //  color's (r, g, b, a)
         gl.FLOAT,           
         false,              // no need for standardization
-        7 * Float32Array.BYTES_PER_ELEMENT, // per vertex's lenth
-        3 * Float32Array.BYTES_PER_ELEMENT  // offset
+        vertexSize, // per vertex's lenth
+        6 * Float32Array.BYTES_PER_ELEMENT  // offset
     );
     gl.enableVertexAttribArray(colorAttributeLocation);
 
+    //create 3d object 
+    const object = new Object3D(gl, shaderProgram);
+    objects.push(object);
+
     //set root parameter
-    const uWorldMatrixLocation = gl.getUniformLocation(shaderProgram, "uWorldMatrix");
-    let worldMat = getWorldMat([12, 0, 0], [0, 0, 0], [1, 1, 1]);
-    gl.uniformMatrix4fv(uWorldMatrixLocation, false, worldMat);
+    let worldMatrix = getWorldMatrix(object.position, object.rotation, object.scale);
+    gl.uniformMatrix4fv(object.uWorldMatrixLocation, false, worldMatrix);
+
+    const viewMatrix = getViewMatrix(camera); 
+    const uViewMatrixLocation = gl.getUniformLocation(shaderProgram, "uViewMatrix");
+    gl.uniformMatrix4fv(uViewMatrixLocation, false, viewMatrix);
+
+    const projectionMatrix = getProjectionMatrix();
+    const uProjectionMatrixLocation = gl.getUniformLocation(shaderProgram, "uProjectionMatrix");
+    gl.uniformMatrix4fv(uProjectionMatrixLocation, false, projectionMatrix);
+
 
     gl.clearColor(1.0, 1.0, 0.0, 1.0);
 
@@ -175,30 +222,67 @@ function createVertexBuffer(model) {
     }
 }
 
-//position, rotation, scale are int arrays
-function getWorldMat(position, rotation, scale) {
+//position, rotation, scale are int arrays, 
+function getWorldMatrix(position, rotation, scale) {
     const worldMat = mat4.create();
-    //mat4.scale(worldMat, worldMat, scale);
 
-    //mat4.rotateY(worldMat, worldMat, rotation[1]);
-    //mat4.rotateX(worldMat, worldMat, rotation[0]);
-    //mat4.rotateZ(worldMat, worldMat, rotation[2]);
+    const positionRight = leftToRight(position);
+    const rotationRight = leftToRight(rotation);
 
-    mat4.translate(worldMat, worldMat, position);
+    mat4.translate(worldMat, worldMat, positionRight);
 
-    console.log(position);
-    console.log(worldMat);
+    mat4.rotateZ(worldMat, worldMat, rotationRight[2]);
+    mat4.rotateX(worldMat, worldMat, rotationRight[0]);
+    mat4.rotateY(worldMat, worldMat, rotationRight[1]);
+
+    mat4.scale(worldMat, worldMat, scale);
+
     return worldMat;
 }
 
-function getProjectionMat() {
-    const matrix = mat4.create();
+function getViewMatrix(camera) {
+    const viewMatrix = mat4.create();
+    const position = leftToRight(camera.position);
+    const lookAt = leftToRight(camera.lookAt);
+    const up = leftToRight(camera.up);
+    mat4.lookAt(viewMatrix, position, lookAt, up);
 
-
+    return viewMatrix;
 }
 
-function setMats() {
+function getProjectionMatrix() {
+    const matrix = mat4.create();
+    mat4.perspective(matrix, Math.PI / 4, canvas.width / canvas.height, 0.1, 100);
 
+    return matrix;
+}
+
+function leftToRight(vector3) {
+    return [vector3[0], vector3[1], -vector3[2]];
+}
+
+function testRoot(deltaTime) {
+
+    objects.forEach(function (object, index) {
+        var rotation = deltaTime * 0.001;
+        object.rotation[2] += rotation;
+
+        let newWorldMatrix = getWorldMatrix(object.position, object.rotation, object.scale);
+        gl.uniformMatrix4fv(object.uWorldMatrixLocation, false, newWorldMatrix);
+    });
+
+
+    gl.clearColor(1.0, 1.0, 0.0, 1.0);
+
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+    //gl.drawArrays(gl.TRIANGLES, 0, vertices.length / 7);
+    gl.drawElements(
+        gl.TRIANGLES,      // draw mode: triangle
+        6,
+        gl.UNSIGNED_SHORT,
+        0                  // offset
+    );
 }
 
 function render() {
