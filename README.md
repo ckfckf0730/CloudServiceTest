@@ -102,7 +102,7 @@ Microsoft.AspNetCore.SignalR使用して、非chatページでサーフィンす
 WebGlに基づいて、3Dレンダリング基本の開発：<br>
 <br>
 各行列の変換、光の効果、カメラの配置など、基本な機能の3Dレンダリング・モジュール作りました。
-![describe1](https://github.com/ckfckf0730/CloudServiceTest/blob/main/readme/DataStreaming.gif)<br>
+![describe1](https://github.com/ckfckf0730/CloudServiceTest/blob/main/readme/Rendering01.gif)<br>
 <br>
 DirectX 12と比べると、WebGLは初期化が大幅に簡略化されています。<br>
 例えば、ハードウェア情報を調べたり、Direct用のウィンドウ情報を初期化したりする必要がありませんし、フェンスやコマンドリストを書く必要もありません。<br>
