@@ -8,6 +8,7 @@ var shaderProgram;
 var models = [];
 var objects = [];
 
+var testIndex = 0;
 
 class Object3D {
     constructor(gl, shaderProgram) {
@@ -21,7 +22,7 @@ class Object3D {
 }
 
 var camera = {} ;
-camera.position = [0, 0, -2];
+camera.position = [0, 3, -4];
 camera.lookAt = [0, 0, 0];
 camera.up = [0, 1, 0];
 
@@ -35,10 +36,16 @@ gl.clearColor(1.0, 1.0, 0.0, 1.0);
 
 gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-gl.enable(gl.CULL_FACE); 
+gl.enable(gl.CULL_FACE);
 gl.cullFace(gl.BACK);
 
 gl.frontFace(gl.CW);
+
+gl.disable(gl.BLEND);  
+
+gl.enable(gl.DEPTH_TEST); 
+gl.depthFunc(gl.LESS);
+
 
 function initVertices(data) {
     console.log(data);
@@ -46,16 +53,17 @@ function initVertices(data) {
     data.vertices.forEach(function (vertex,index) {
         vers.push(vertex.position.X);
         vers.push(vertex.position.Y);
-        vers.push(vertex.position.Z);
+        vers.push(-vertex.position.Z);
         vers.push(vertex.normal.X);
         vers.push(vertex.normal.Y);
-        vers.push(vertex.normal.Z);
+        vers.push(-vertex.normal.Z);
         vers.push(vertex.color.X);
         vers.push(vertex.color.Y);
         vers.push(vertex.color.Z);
         vers.push(vertex.color.W);
     });
 
+    testIndex = data.indices.length;
     models.push({ vertices: vers, indices: data.indices });
 }
 
@@ -203,6 +211,10 @@ function createVertexBuffer(model) {
     const uProjectionMatrixLocation = gl.getUniformLocation(shaderProgram, "uProjectionMatrix");
     gl.uniformMatrix4fv(uProjectionMatrixLocation, false, projectionMatrix);
 
+    const eye = leftToRight(camera.position);
+    const uEyeLocation = gl.getUniformLocation(shaderProgram, "uEye");
+    gl.uniform3fv(uEyeLocation, eye);
+
 
     gl.clearColor(1.0, 1.0, 0.0, 1.0);
 
@@ -265,7 +277,7 @@ function testRoot(deltaTime) {
 
     objects.forEach(function (object, index) {
         var rotation = deltaTime * 0.001;
-        object.rotation[2] += rotation;
+        object.rotation[1] += rotation;
 
         let newWorldMatrix = getWorldMatrix(object.position, object.rotation, object.scale);
         gl.uniformMatrix4fv(object.uWorldMatrixLocation, false, newWorldMatrix);
@@ -279,7 +291,7 @@ function testRoot(deltaTime) {
     //gl.drawArrays(gl.TRIANGLES, 0, vertices.length / 7);
     gl.drawElements(
         gl.TRIANGLES,      // draw mode: triangle
-        6,
+        testIndex,
         gl.UNSIGNED_SHORT,
         0                  // offset
     );

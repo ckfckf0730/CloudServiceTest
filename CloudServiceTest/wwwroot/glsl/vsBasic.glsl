@@ -14,10 +14,10 @@ varying vec3 vRay;
 
 void main() {
     vWorldPos = uWorldMatrix  * vec4(aPosition, 1);
-    vWorldNormal = uWorldMatrix  * vec4(aNormal, 0);
+    vWorldNormal = (uWorldMatrix  * vec4(aNormal, 0)).xyz;
 
     gl_Position = uProjectionMatrix * uViewMatrix * vWorldPos;
     vColor = aColor;
 
-    vRay = normalize(vWorldPos.xyz - eye);
+    vRay = normalize(vWorldPos.xyz - uEye);
 }

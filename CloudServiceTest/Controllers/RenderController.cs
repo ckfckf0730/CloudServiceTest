@@ -16,23 +16,81 @@ namespace CloudServiceTest.Controllers
 
 		public IActionResult Render()
 		{
-			TestVertex[] vertices = new TestVertex[4];
-			vertices[0].position = new Vector3(-0.2f, 0.2f, 0);
-			vertices[1].position = new Vector3(0.2f, -0.2f, 0);
-			vertices[2].position = new Vector3(-0.2f, -0.2f, 0);
-			vertices[3].position = new Vector3(0.2f, 0.2f, 0);
+			TestVertex[] vertices = new TestVertex[24];
+			vertices[0].position = new Vector3(-0.5f, 0.5f, -0.5f);
+			vertices[1].position = new Vector3(0.5f, 0.5f, -0.5f);
+			vertices[2].position = new Vector3(-0.5f, -0.5f, -0.5f);
+			vertices[3].position = new Vector3(0.5f, -0.5f, -0.5f);
 
-			vertices[0].normal = new Vector3(1, 1, -1);
-			vertices[1].normal = new Vector3(1, 1, -1);
-			vertices[2].normal = new Vector3(1, 1, -1);
-			vertices[3].normal = new Vector3(1, 1, -1);
+			vertices[0].normal = new Vector3(0, 0, -1);
+			vertices[1].normal = new Vector3(0, 0, -1);
+			vertices[2].normal = new Vector3(0, 0, -1);
+			vertices[3].normal = new Vector3(0, 0, -1);
+
+			vertices[4].position = new Vector3(-0.5f, 0.5f, 0.5f);
+			vertices[5].position = new Vector3(0.5f, 0.5f, 0.5f);
+			vertices[6].position = new Vector3(-0.5f, 0.5f, -0.5f);
+			vertices[7].position = new Vector3(0.5f, 0.5f, -0.5f);
+
+			vertices[4].normal = new Vector3(0, 1, 0);
+			vertices[5].normal = new Vector3(0, 1, 0);
+			vertices[6].normal = new Vector3(0, 1, 0);
+			vertices[7].normal = new Vector3(0, 1, 0);
+
+			vertices[8].position = new Vector3(-0.5f, 0.5f, 0.5f);
+			vertices[9].position = new Vector3(-0.5f, 0.5f, -0.5f);
+			vertices[10].position = new Vector3(-0.5f, -0.5f, 0.5f);
+			vertices[11].position = new Vector3(-0.5f, -0.5f, -0.5f);
+
+			vertices[8].normal = new Vector3(-1, 0, 0);
+			vertices[9].normal = new Vector3(-1, 0, 0);
+			vertices[10].normal = new Vector3(-1, 0, 0);
+			vertices[11].normal = new Vector3(-1, 0, 0);
+
+			vertices[12].position = new Vector3(0.5f, 0.5f, -0.5f);
+			vertices[13].position = new Vector3(0.5f, 0.5f, 0.5f);
+			vertices[14].position = new Vector3(0.5f, -0.5f, -0.5f);
+			vertices[15].position = new Vector3(0.5f, -0.5f, 0.5f);
+
+			vertices[12].normal = new Vector3(1, 0, 0);
+			vertices[13].normal = new Vector3(1, 0, 0);
+			vertices[14].normal = new Vector3(1, 0, 0);
+			vertices[15].normal = new Vector3(1, 0, 0);
+
+			vertices[16].position = new Vector3(0.5f, 0.5f, 0.5f);
+			vertices[17].position = new Vector3(-0.5f, 0.5f, 0.5f);
+			vertices[18].position = new Vector3(0.5f, -0.5f, 0.5f);
+			vertices[19].position = new Vector3(-0.5f, -0.5f, 0.5f);
+
+			vertices[16].normal = new Vector3(0, 0, 1);
+			vertices[17].normal = new Vector3(0, 0, 1);
+			vertices[18].normal = new Vector3(0, 0, 1);
+			vertices[19].normal = new Vector3(0, 0, 1);
+
+			vertices[20].position = new Vector3(-0.5f, -0.5f, -0.5f);
+			vertices[21].position = new Vector3(0.5f, -0.5f, -0.5f);
+			vertices[22].position = new Vector3(-0.5f, -0.5f, 0.5f);
+			vertices[23].position = new Vector3(0.5f, -0.5f, 0.5f);
+
+			vertices[20].normal = new Vector3(0, -1, 0);
+			vertices[21].normal = new Vector3(0, -1, 0);
+			vertices[22].normal = new Vector3(0, -1, 0);
+			vertices[23].normal = new Vector3(0, -1, 0);
 
 			for (int i = 0; i < vertices.Length; i++)
 			{
-				vertices[i].color = new Vector4(0, 0, 1, 1);
+				vertices[i].color = new Vector4(0.5f, 0.5f, 1, 1);
 			}
 
-			int[] indices = [0, 1, 2, 0, 3, 1];
+			int[] indices =
+				[
+				0, 1, 2, 2, 1, 3,
+				4, 5, 6, 6, 5, 7,
+				8,9,10,10,9,11,
+				12,13,14,14,13,15,
+				16,17,18,18,17,19,
+				20,21,22,22,21,23
+				];
 
 			var data = new
 			{

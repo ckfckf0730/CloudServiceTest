@@ -55,8 +55,8 @@ function initVertices(data) {
         vers.push(vertex.color.Z);
         vers.push(vertex.color.W);
     });
+
     models.push({ vertices: vers, indices: data.indices });
-    console.log(models);
 }
 
 async function loadShaderFile(url) {
@@ -171,7 +171,7 @@ function createVertexBuffer(model) {
         gl.FLOAT,
         false,      // no need for standardization
         vertexSize, // per vertex's lenth
-        3           // offset
+        3 * Float32Array.BYTES_PER_ELEMENT          // offset
     );
     gl.enableVertexAttribArray(normalAttributeLocation);
 
@@ -191,7 +191,7 @@ function createVertexBuffer(model) {
     const object = new Object3D(gl, shaderProgram);
     objects.push(object);
 
-    //set root parameter
+    // set root parameter
     let worldMatrix = getWorldMatrix(object.position, object.rotation, object.scale);
     gl.uniformMatrix4fv(object.uWorldMatrixLocation, false, worldMatrix);
 
@@ -202,6 +202,10 @@ function createVertexBuffer(model) {
     const projectionMatrix = getProjectionMatrix();
     const uProjectionMatrixLocation = gl.getUniformLocation(shaderProgram, "uProjectionMatrix");
     gl.uniformMatrix4fv(uProjectionMatrixLocation, false, projectionMatrix);
+
+    const eye = leftToRight(camera.position);
+    const uEyeLocation = gl.getUniformLocation(shaderProgram, "uEye");
+    gl.uniformMatrix4fv(uEyeLocation, false, eye);
 
 
     gl.clearColor(1.0, 1.0, 0.0, 1.0);
