@@ -31,7 +31,7 @@
 
 
 	async function startInit() {
-		initVertices(vertices);
+		initVertices(vertices, '@Html.Raw(ViewData["testPicture"])');
 		await initWebGL();
 
 		requestAnimationFrame(renderLoop);

@@ -7,7 +7,7 @@ var shaderProgram;
 
 var models = [];
 var objects = [];
-
+var testTexture = null;
 var testIndex = 0;
 
 class Object3D {
@@ -47,24 +47,50 @@ gl.enable(gl.DEPTH_TEST);
 gl.depthFunc(gl.LESS);
 
 
-function initVertices(data) {
-    console.log(data);
+function initVertices(data, picture) {
+    const image = new Image();
+    image.src = picture;
+    image.onload = function() {
+        initTexture(image);
+    };
+
     let vers = [];
-    data.vertices.forEach(function (vertex,index) {
+    data.vertices.forEach(function (vertex, index) {
         vers.push(vertex.position.X);
         vers.push(vertex.position.Y);
         vers.push(-vertex.position.Z);
         vers.push(vertex.normal.X);
         vers.push(vertex.normal.Y);
         vers.push(-vertex.normal.Z);
-        vers.push(vertex.color.X);
-        vers.push(vertex.color.Y);
-        vers.push(vertex.color.Z);
-        vers.push(vertex.color.W);
+        vers.push(vertex.uv.X);
+        vers.push(vertex.uv.Y);
     });
 
     testIndex = data.indices.length;
     models.push({ vertices: vers, indices: data.indices });
+}
+
+function initTexture(image) {
+    testTexture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, testTexture);
+
+    gl.texImage2D(
+        gl.TEXTURE_2D,
+        0,
+        gl.RGBA,
+        gl.RGBA,
+        gl.UNSIGNED_BYTE,
+        image
+    );
+
+    // 设置纹理参数
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+
+    // 解绑纹理
+    gl.bindTexture(gl.TEXTURE_2D, null);
 }
 
 async function loadShaderFile(url) {
@@ -156,10 +182,10 @@ function createVertexBuffer(model) {
 
     const positionAttributeLocation = gl.getAttribLocation(shaderProgram, 'aPosition');
     const normalAttributeLocation = gl.getAttribLocation(shaderProgram, 'aNormal');
-    const colorAttributeLocation = gl.getAttribLocation(shaderProgram, 'aColor');
+    const uvAttributeLocation = gl.getAttribLocation(shaderProgram, 'aUv');
 
-    let vertexSize = 10 * Float32Array.BYTES_PER_ELEMENT;
-
+    let vertexSize = 8 * Float32Array.BYTES_PER_ELEMENT;
+    console.log(vertexSize);
 
     // 设置 position 属性指针
     gl.vertexAttribPointer(
@@ -184,16 +210,16 @@ function createVertexBuffer(model) {
     gl.enableVertexAttribArray(normalAttributeLocation);
 
 
-    // 设置 color 属性指针
+    // 设置 uv 属性指针
     gl.vertexAttribPointer(
-        colorAttributeLocation,
-        4,                  //  color's (r, g, b, a)
+        uvAttributeLocation,
+        2,                  //  uv's (x, y)
         gl.FLOAT,           
         false,              // no need for standardization
         vertexSize, // per vertex's lenth
         6 * Float32Array.BYTES_PER_ELEMENT  // offset
     );
-    gl.enableVertexAttribArray(colorAttributeLocation);
+    gl.enableVertexAttribArray(uvAttributeLocation);
 
     //create 3d object 
     const object = new Object3D(gl, shaderProgram);
@@ -287,6 +313,10 @@ function testRoot(deltaTime) {
     gl.clearColor(1.0, 1.0, 0.0, 1.0);
 
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+    gl.bindTexture(gl.TEXTURE_2D, testTexture);
+    gl.activeTexture(gl.TEXTURE0); // 激活纹理单元 0
+    gl.uniform1i(gl.getUniformLocation(shaderProgram, 'uSampler'), 0); 
 
     //gl.drawArrays(gl.TRIANGLES, 0, vertices.length / 7);
     gl.drawElements(

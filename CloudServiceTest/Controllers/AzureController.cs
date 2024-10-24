@@ -96,13 +96,6 @@ public class AzureController : Controller
 
                     imageSrc = $"data:{mimeType};base64,{base64String}";
 
-                    //ThumbnailData thumb = new ThumbnailData
-                    //{
-                    //    Name = item.FileName,
-                    //    ImageSrc = imageSrc,
-                    //    ResId = item.Id,
-                    //    Tag = item.Tag
-                    //};
                 }
 
 				var data = new
@@ -172,13 +165,6 @@ public class AzureController : Controller
     {
         var fileRecord = _databaseService.GetFileRecordAsync(guid).Result;
 
-        //var eTag = "\"" + fileRecord.Id.ToString() + "\"";
-        //var incomingETag = Request.Headers["If-None-Match"].FirstOrDefault()?.Trim('"');
-        //if (incomingETag == fileRecord.Id.ToString())
-        //{
-        //    return StatusCode(StatusCodes.Status304NotModified);
-        //}
-
         var stream = _fileStorageService.DownloadFileAsync(_azureShareFolder, fileRecord.Id.ToString()).Result;
         var extension = Path.GetExtension(fileRecord.FileName).ToLower();
         string mimeType = extension switch
@@ -190,8 +176,6 @@ public class AzureController : Controller
             _ => "application/octet-stream"
         };
 
-        //Response.Headers["Cache-Control"] = "public, max-age=3600";
-        //Response.Headers["ETag"] = eTag;
         return File(stream, mimeType);
     }
 
@@ -276,7 +260,7 @@ public class AzureController : Controller
             if (isSuccess)
             {
                 transaction.Commit();
-                UpdateThumbnail(file, newFile.ThumbnailId.ToString());
+                UploadThumbnail(file, newFile.ThumbnailId.ToString());
                 return Json(new { success = true, message = "File uploaded successfully." });
             }
             else
@@ -331,7 +315,7 @@ public class AzureController : Controller
         return await PictureList();
     }
 
-    private async Task UpdateThumbnail(IFormFile file, string name)
+    private async Task UploadThumbnail(IFormFile file, string name)
     {
         var data = _imageService.GenerateThumbnail(file);
         if (data == null)
