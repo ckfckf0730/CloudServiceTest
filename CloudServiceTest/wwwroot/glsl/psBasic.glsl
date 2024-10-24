@@ -15,7 +15,7 @@ void main() {
 
     float diffuseB = clamp(dot(-light, vWorldNormal), 0.0, 1.0) * 0.75;
 
-	vec3 refLight = normalize(reflect(-light, vWorldNormal));
+	vec3 refLight = normalize(reflect(light, vWorldNormal));
 	float specularB = pow(clamp(dot(refLight, -vRay), 0.0, 1.0), 0.5);
 
 	vec4 finalColor = vColor * diffuseB;
