@@ -31,6 +31,12 @@ namespace CloudServiceTest.Controllers
 			public Vector2 uv;
 		}
 
+		public class RenderingModel
+		{
+			public TestVertex[] vertices;
+			public int[] indices;
+		}
+
 
 		public IActionResult Render()
 		{
@@ -115,11 +121,9 @@ namespace CloudServiceTest.Controllers
 				20,21,22,22,21,23
 				];
 
-			var data = new
-			{
-				vertices,
-				indices
-			};
+			var data = new RenderingModel();
+			data.vertices = vertices;
+			data.indices = indices;
 
 			var json = JsonConvert.SerializeObject(data);
 			ViewData["test"] = json;

@@ -49,13 +49,10 @@ gl.depthFunc(gl.LESS);
 
 function initVertices(data, picture) {
     const image = new Image();
-
-    image.onload = function() {
-        //initTexture(picture);
-    };
-    console.log(picture);   
     image.src = picture;
-
+    image.onload = function() {
+        initTexture(image);
+    };
 
     let vers = [];
     data.vertices.forEach(function (vertex, index) {
@@ -75,7 +72,7 @@ function initVertices(data, picture) {
 
 function initTexture(image) {
     testTexture = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_2D, testTexture   );
+    gl.bindTexture(gl.TEXTURE_2D, testTexture);
 
     gl.texImage2D(
         gl.TEXTURE_2D,
@@ -316,6 +313,10 @@ function testRoot(deltaTime) {
     gl.clearColor(1.0, 1.0, 0.0, 1.0);
 
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+    gl.bindTexture(gl.TEXTURE_2D, testTexture);
+    gl.activeTexture(gl.TEXTURE0); // 激活纹理单元 0
+    gl.uniform1i(gl.getUniformLocation(shaderProgram, 'uSampler'), 0); 
 
     //gl.drawArrays(gl.TRIANGLES, 0, vertices.length / 7);
     gl.drawElements(
