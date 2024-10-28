@@ -1,21 +1,26 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using CloudServiceTest.Models.Database;
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Newtonsoft.Json;
 using System;
 using System.Numerics;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace CloudServiceTest
 {
 	public class RenderingManager
 	{
 		private readonly Dictionary<string, string> _connectionMapping = new Dictionary<string, string>();
-		private readonly Dictionary<string, string> _modelMapping = new Dictionary<string, string>();
+		private readonly Dictionary<string, string> _resourceMapping = new Dictionary<string, string>();
 		private readonly IHubContext<RenderingHub> _hubContext;
+		private readonly IWebHostEnvironment _hostingEnvironment;
 
-		public RenderingManager(IHubContext<RenderingHub> hubContext)
+		public RenderingManager(IHubContext<RenderingHub> hubContext, IWebHostEnvironment hostingEnvironment)
 		{
 			_hubContext = hubContext;
+			_hostingEnvironment = hostingEnvironment;
 
-
+			/*
 			// test model data
 			TestVertex[] vertices = new TestVertex[24];
 			vertices[0].position = new Vector3(-0.5f, 0.5f, -0.5f);
@@ -100,8 +105,34 @@ namespace CloudServiceTest
 			data.vertices = vertices;
 			data.indices = indices;
 
-			var json = JsonConvert.SerializeObject(data);
-			_modelMapping.Add("model_cube", json);
+			*/
+
+			
+			//_resourceMapping.Add("model_cube.jm", json);
+
+			var fileName = "model_cube.jm";
+			string wwwRootPath = _hostingEnvironment.WebRootPath;
+			var fullPath = wwwRootPath + "\\resource\\" + fileName;
+
+			var model = File.ReadAllText(fullPath);
+			_resourceMapping.Add(fileName, model);
+
+			fileName = "texture_cat.jpg";
+			fullPath = wwwRootPath + "\\resource\\" + fileName;
+			var imageBytes = File.ReadAllBytes(fullPath);
+			var base64String = Convert.ToBase64String(imageBytes);
+			var fileExtension = Path.GetExtension(fileName).ToLower();
+			string mimeType = fileExtension switch
+			{
+				".jpg" or ".jpeg" => "image/jpeg",
+				".png" => "image/png",
+				".gif" => "image/gif",
+				".bmp" => "image/bmp",
+				_ => "application/octet-stream"  // 默认 MIME 类型，处理未知的扩展名
+			};
+
+			base64String = $"data:{mimeType};base64,{base64String}";
+			_resourceMapping.Add(fileName, base64String);
 		}
 
 		public void OnConnected(string connectionId, string pageId)
@@ -122,7 +153,11 @@ namespace CloudServiceTest
 		{
 			await Task.Delay(1000);
 			
-			await SendMessageToConnectionId(connectionId, "RenderModel", _modelMapping["model_cube"]);
+			await SendMessageToConnectionId(connectionId, "RenderModel", _resourceMapping["model_cube.jm"]);
+
+			await Task.Delay(1000);
+
+			await SendMessageToConnectionId(connectionId, "TextureData", _resourceMapping["texture_cat.jpg"]);
 		}
 
 		public void  OnDisconnected(string connectionId)
@@ -167,6 +202,18 @@ namespace CloudServiceTest
 		{
 			public TestVertex[] vertices;
 			public int[] indices;
+		}
+
+		public class Object3D
+		{
+			public string name;
+
+			public Vector3 position;
+			public Vector3 rotation;
+			public Vector3 scale;
+
+			public string model;
+			public string texture;
 		}
 	}
 }

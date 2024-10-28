@@ -26,44 +26,44 @@ namespace CloudServiceTest.Controllers
 		public IActionResult Render()
 		{
 			// test picture data
-			if (IsLogin(out var userName))
-			{
-				var list = _databaseService.LoadFileRecord(userName);
-				Random random = new Random();
+			//if (IsLogin(out var userName))
+			//{
+			//	var list = _databaseService.LoadFileRecord(userName);
+			//	Random random = new Random();
 
-				if (list.Count == 0)
-				{
-					ViewData["testPicture"] = null;
-					return View();
-				}
+			//	if (list.Count == 0)
+			//	{
+			//		ViewData["testPicture"] = null;
+			//		return View();
+			//	}
 
-				int randomIndex = random.Next(0, list.Count);
+			//	int randomIndex = random.Next(0, list.Count);
 
-				var fileRecord = list[randomIndex];
+			//	var fileRecord = list[randomIndex];
 
-				var stream = _fileStorageService.DownloadFileAsync("sharedfolders", fileRecord.Id.ToString()).Result;
-				using (var memoryStream = new MemoryStream())
-				{
-					stream.CopyTo(memoryStream);
-					var imageBytes = memoryStream.ToArray();
-					var base64String = Convert.ToBase64String(imageBytes);
+			//	var stream = _fileStorageService.DownloadFileAsync("sharedfolders", fileRecord.Id.ToString()).Result;
+			//	using (var memoryStream = new MemoryStream())
+			//	{
+			//		stream.CopyTo(memoryStream);
+			//		var imageBytes = memoryStream.ToArray();
+			//		var base64String = Convert.ToBase64String(imageBytes);
 
-					var fileExtension = Path.GetExtension(fileRecord.FileName).ToLower();
-					string mimeType = fileExtension switch
-					{
-						".jpg" or ".jpeg" => "image/jpeg",
-						".png" => "image/png",
-						".gif" => "image/gif",
-						".bmp" => "image/bmp",
-						_ => "application/octet-stream"  // 默认 MIME 类型，处理未知的扩展名
-					};
+			//		var fileExtension = Path.GetExtension(fileRecord.FileName).ToLower();
+			//		string mimeType = fileExtension switch
+			//		{
+			//			".jpg" or ".jpeg" => "image/jpeg",
+			//			".png" => "image/png",
+			//			".gif" => "image/gif",
+			//			".bmp" => "image/bmp",
+			//			_ => "application/octet-stream"  // 默认 MIME 类型，处理未知的扩展名
+			//		};
 
-					var data2 = $"data:{mimeType};base64,{base64String}";
-					ViewData["testPicture"] = data2;
+			//		var data2 = $"data:{mimeType};base64,{base64String}";
+			//		ViewData["testPicture"] = data2;
 
-				}
+			//	}
 
-			}
+			//}
 
 			return View();
 		}

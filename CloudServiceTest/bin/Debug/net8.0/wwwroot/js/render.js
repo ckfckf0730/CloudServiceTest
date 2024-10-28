@@ -16,6 +16,8 @@ class Object3D {
         this.rotation = [0, 0, 0];
         this.scale = [1, 1, 1];
         this.uWorldMatrixLocation = gl.getUniformLocation(shaderProgram, "uWorldMatrix");
+
+        this.model = null;
     }
 
 
@@ -224,6 +226,7 @@ function createVertexBuffer(data) {
 
     //create 3d object 
     const object = new Object3D(gl, shaderProgram);
+    object.model = model;
     objects.push(object);
 
     // set root parameter
@@ -243,22 +246,22 @@ function createVertexBuffer(data) {
     gl.uniform3fv(uEyeLocation, eye);
 
 
-    gl.clearColor(1.0, 1.0, 0.0, 1.0);
+    //gl.clearColor(1.0, 1.0, 0.0, 1.0);
 
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);    
+    //gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);    
 
-    //gl.drawArrays(gl.TRIANGLES, 0, vertices.length / 7);
-    gl.drawElements(
-        gl.TRIANGLES,      // draw mode: triangle
-        indices.length,    
-        gl.UNSIGNED_SHORT, 
-        0                  // offset
-    );
+    ////gl.drawArrays(gl.TRIANGLES, 0, vertices.length / 7);
+    //gl.drawElements(
+    //    gl.TRIANGLES,      // draw mode: triangle
+    //    indices.length,    
+    //    gl.UNSIGNED_SHORT, 
+    //    0                  // offset
+    //);
 
-    const error = gl.getError();
-    if (error !== gl.NO_ERROR) {
-        console.error('WebGL Error:', error);
-    }
+    //const error = gl.getError();
+    //if (error !== gl.NO_ERROR) {
+    //    console.error('WebGL Error:', error);
+    //}
 }
 
 //position, rotation, scale are int arrays, 
@@ -301,31 +304,32 @@ function leftToRight(vector3) {
 }
 
 function testRoot(deltaTime) {
-    return;
+    gl.clearColor(1.0, 1.0, 0.0, 1.0);
+
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+
     objects.forEach(function (object, index) {
         var rotation = deltaTime * 0.001;
         object.rotation[1] += rotation;
 
         let newWorldMatrix = getWorldMatrix(object.position, object.rotation, object.scale);
         gl.uniformMatrix4fv(object.uWorldMatrixLocation, false, newWorldMatrix);
+
+        gl.bindTexture(gl.TEXTURE_2D, testTexture);
+        gl.activeTexture(gl.TEXTURE0); // 激活纹理单元 0
+        gl.uniform1i(gl.getUniformLocation(shaderProgram, 'uSampler'), 0);
+
+        //gl.drawArrays(gl.TRIANGLES, 0, vertices.length / 7);
+        gl.drawElements(
+            gl.TRIANGLES,      // draw mode: triangle
+            object.model.indices.length,
+            gl.UNSIGNED_SHORT,
+            0                  // offset
+        );
     });
 
-
-    gl.clearColor(1.0, 1.0, 0.0, 1.0);
-
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
-    gl.bindTexture(gl.TEXTURE_2D, testTexture);
-    gl.activeTexture(gl.TEXTURE0); // 激活纹理单元 0
-    gl.uniform1i(gl.getUniformLocation(shaderProgram, 'uSampler'), 0); 
-
-    //gl.drawArrays(gl.TRIANGLES, 0, vertices.length / 7);
-    gl.drawElements(
-        gl.TRIANGLES,      // draw mode: triangle
-        testIndex,
-        gl.UNSIGNED_SHORT,
-        0                  // offset
-    );
+    
 }
 
 function render() {

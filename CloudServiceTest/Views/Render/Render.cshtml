@@ -22,6 +22,10 @@
 		createVertexBuffer(data);
 	});
 
+	renderingConnection.on("TextureData", function (message) {
+		initVertices(message);
+	});
+
 	var indexedDB = null;
 
 	startInit();
@@ -47,7 +51,6 @@
 	async function startInit() {
 		indexedDB = IndexedDB.getDB("Rendering");
 
-		initVertices('@Html.Raw(ViewData["testPicture"])');
 		await initWebGL();
 
 		requestAnimationFrame(renderLoop);
