@@ -47,27 +47,12 @@ gl.enable(gl.DEPTH_TEST);
 gl.depthFunc(gl.LESS);
 
 
-function initVertices(data, picture) {
+function initVertices(picture) {
     const image = new Image();
     image.src = picture;
     image.onload = function() {
         initTexture(image);
     };
-
-    let vers = [];
-    data.vertices.forEach(function (vertex, index) {
-        vers.push(vertex.position.X);
-        vers.push(vertex.position.Y);
-        vers.push(-vertex.position.Z);
-        vers.push(vertex.normal.X);
-        vers.push(vertex.normal.Y);
-        vers.push(-vertex.normal.Z);
-        vers.push(vertex.uv.X);
-        vers.push(vertex.uv.Y);
-    });
-
-    testIndex = data.indices.length;
-    models.push({ vertices: vers, indices: data.indices });
 }
 
 function initTexture(image) {
@@ -163,10 +148,26 @@ async function initWebGL() {
 
     // Continue with WebGL setup and rendering...
 
-    createVertexBuffer(models[0]);
+    //createVertexBuffer(models[0]);
 }
 
-function createVertexBuffer(model) {     
+function createVertexBuffer(data) {     
+    let vers = [];
+    data.vertices.forEach(function (vertex, index) {
+        vers.push(vertex.position.X);
+        vers.push(vertex.position.Y);
+        vers.push(-vertex.position.Z);
+        vers.push(vertex.normal.X);
+        vers.push(vertex.normal.Y);
+        vers.push(-vertex.normal.Z);
+        vers.push(vertex.uv.X);
+        vers.push(vertex.uv.Y);
+    });
+    testIndex = data.indices.length;
+    let model = { vertices: vers, indices: data.indices };
+    models.push(model);
+
+
     let vertices = model.vertices;
     let indices = model.indices;
 
@@ -300,7 +301,7 @@ function leftToRight(vector3) {
 }
 
 function testRoot(deltaTime) {
-
+    return;
     objects.forEach(function (object, index) {
         var rotation = deltaTime * 0.001;
         object.rotation[1] += rotation;

@@ -17,6 +17,7 @@ builder.Services.AddSingleton<CloudServiceTest.BingSearchService>();
 builder.Services.AddScoped<CloudServiceTest.DatabaseService>();
 builder.Services.Configure<CloudServiceTest.SmtpSettings>(builder.Configuration.GetSection("Smtp"));
 builder.Services.AddTransient<CloudServiceTest.IEmailSender, CloudServiceTest.EmailSender>();
+builder.Services.AddSingleton<CloudServiceTest.RenderingManager>();
 
 // add database connection
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -68,6 +69,7 @@ app.UseAuthorization();
 app.UseEndpoints(endpoints =>
 {
 	endpoints.MapHub<CloudServiceTest.ChatHub>("/chatHub");
+	endpoints.MapHub<CloudServiceTest.RenderingHub>("/renderingHub");
 });
 
 

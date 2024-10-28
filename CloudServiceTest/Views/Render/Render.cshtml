@@ -5,11 +5,23 @@
 <script src="~/js/gl-matrix.js"></script>
 <script src="~/js/render.js"></script>
 <p>
-	@ViewData["test"]
+	
 </p>
 
 <script>
-	var vertices = JSON.parse(@Json.Serialize(ViewData["test"]));
+	const renderingConnection = new signalR.HubConnectionBuilder()
+		.withUrl("/renderingHub?pageId=page1")
+		.build();
+
+	renderingConnection.start().then(() => {
+		console.log("Connected with connectionId:", renderingConnection.connectionId);
+	});
+
+	renderingConnection.on("RenderModel", function (message) {
+		const data = JSON.parse(message);
+		createVertexBuffer(data);
+	});
+
 	var indexedDB = null;
 
 	startInit();
@@ -35,7 +47,7 @@
 	async function startInit() {
 		indexedDB = IndexedDB.getDB("Rendering");
 
-		initVertices(vertices, '@Html.Raw(ViewData["testPicture"])');
+		initVertices('@Html.Raw(ViewData["testPicture"])');
 		await initWebGL();
 
 		requestAnimationFrame(renderLoop);

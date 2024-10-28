@@ -16,6 +16,8 @@ class Object3D {
         this.rotation = [0, 0, 0];
         this.scale = [1, 1, 1];
         this.uWorldMatrixLocation = gl.getUniformLocation(shaderProgram, "uWorldMatrix");
+
+        this.model = null;
     }
 
 
@@ -47,27 +49,12 @@ gl.enable(gl.DEPTH_TEST);
 gl.depthFunc(gl.LESS);
 
 
-function initVertices(data, picture) {
+function initVertices(picture) {
     const image = new Image();
     image.src = picture;
     image.onload = function() {
         initTexture(image);
     };
-
-    let vers = [];
-    data.vertices.forEach(function (vertex, index) {
-        vers.push(vertex.position.X);
-        vers.push(vertex.position.Y);
-        vers.push(-vertex.position.Z);
-        vers.push(vertex.normal.X);
-        vers.push(vertex.normal.Y);
-        vers.push(-vertex.normal.Z);
-        vers.push(vertex.uv.X);
-        vers.push(vertex.uv.Y);
-    });
-
-    testIndex = data.indices.length;
-    models.push({ vertices: vers, indices: data.indices });
 }
 
 function initTexture(image) {
@@ -163,10 +150,26 @@ async function initWebGL() {
 
     // Continue with WebGL setup and rendering...
 
-    createVertexBuffer(models[0]);
+    //createVertexBuffer(models[0]);
 }
 
-function createVertexBuffer(model) {     
+function createVertexBuffer(data) {     
+    let vers = [];
+    data.vertices.forEach(function (vertex, index) {
+        vers.push(vertex.position.X);
+        vers.push(vertex.position.Y);
+        vers.push(-vertex.position.Z);
+        vers.push(vertex.normal.X);
+        vers.push(vertex.normal.Y);
+        vers.push(-vertex.normal.Z);
+        vers.push(vertex.uv.X);
+        vers.push(vertex.uv.Y);
+    });
+    testIndex = data.indices.length;
+    let model = { vertices: vers, indices: data.indices };
+    models.push(model);
+
+
     let vertices = model.vertices;
     let indices = model.indices;
 
@@ -223,6 +226,7 @@ function createVertexBuffer(model) {
 
     //create 3d object 
     const object = new Object3D(gl, shaderProgram);
+    object.model = model;
     objects.push(object);
 
     // set root parameter
@@ -242,22 +246,22 @@ function createVertexBuffer(model) {
     gl.uniform3fv(uEyeLocation, eye);
 
 
-    gl.clearColor(1.0, 1.0, 0.0, 1.0);
+    //gl.clearColor(1.0, 1.0, 0.0, 1.0);
 
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);    
+    //gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);    
 
-    //gl.drawArrays(gl.TRIANGLES, 0, vertices.length / 7);
-    gl.drawElements(
-        gl.TRIANGLES,      // draw mode: triangle
-        indices.length,    
-        gl.UNSIGNED_SHORT, 
-        0                  // offset
-    );
+    ////gl.drawArrays(gl.TRIANGLES, 0, vertices.length / 7);
+    //gl.drawElements(
+    //    gl.TRIANGLES,      // draw mode: triangle
+    //    indices.length,    
+    //    gl.UNSIGNED_SHORT, 
+    //    0                  // offset
+    //);
 
-    const error = gl.getError();
-    if (error !== gl.NO_ERROR) {
-        console.error('WebGL Error:', error);
-    }
+    //const error = gl.getError();
+    //if (error !== gl.NO_ERROR) {
+    //    console.error('WebGL Error:', error);
+    //}
 }
 
 //position, rotation, scale are int arrays, 
@@ -300,6 +304,10 @@ function leftToRight(vector3) {
 }
 
 function testRoot(deltaTime) {
+    gl.clearColor(1.0, 1.0, 0.0, 1.0);
+
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
 
     objects.forEach(function (object, index) {
         var rotation = deltaTime * 0.001;
@@ -307,24 +315,21 @@ function testRoot(deltaTime) {
 
         let newWorldMatrix = getWorldMatrix(object.position, object.rotation, object.scale);
         gl.uniformMatrix4fv(object.uWorldMatrixLocation, false, newWorldMatrix);
+
+        gl.bindTexture(gl.TEXTURE_2D, testTexture);
+        gl.activeTexture(gl.TEXTURE0); // 激活纹理单元 0
+        gl.uniform1i(gl.getUniformLocation(shaderProgram, 'uSampler'), 0);
+
+        //gl.drawArrays(gl.TRIANGLES, 0, vertices.length / 7);
+        gl.drawElements(
+            gl.TRIANGLES,      // draw mode: triangle
+            object.model.indices.length,
+            gl.UNSIGNED_SHORT,
+            0                  // offset
+        );
     });
 
-
-    gl.clearColor(1.0, 1.0, 0.0, 1.0);
-
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
-    gl.bindTexture(gl.TEXTURE_2D, testTexture);
-    gl.activeTexture(gl.TEXTURE0); // 激活纹理单元 0
-    gl.uniform1i(gl.getUniformLocation(shaderProgram, 'uSampler'), 0); 
-
-    //gl.drawArrays(gl.TRIANGLES, 0, vertices.length / 7);
-    gl.drawElements(
-        gl.TRIANGLES,      // draw mode: triangle
-        testIndex,
-        gl.UNSIGNED_SHORT,
-        0                  // offset
-    );
+    
 }
 
 function render() {
