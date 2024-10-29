@@ -151,13 +151,36 @@ namespace CloudServiceTest
 
 		public async Task InitPageTest(string connectionId)
 		{
+			var model = new
+			{
+				name = "model_cube.jm", 
+				data = _resourceMapping["model_cube.jm"] 
+			};
+			var modelJson = JsonConvert.SerializeObject(model);
+
+			await SendMessageToConnectionId(connectionId, "CreateModel", modelJson);
+
+			var texture = new
+			{
+				name = "texture_cat.jpg",
+				data = _resourceMapping["texture_cat.jpg"]
+			};
+			var modelTexture = JsonConvert.SerializeObject(texture);
+
+			await SendMessageToConnectionId(connectionId, "CreateTexture", modelTexture);
+
 			await Task.Delay(1000);
+
+			var object3D = new Object3D();
+			object3D.name = "Test";
+			object3D.model = "model_cube.jm";
+			object3D.texture = "texture_cat.jpg";
+
+			var json = JsonConvert.SerializeObject(object3D);
+
+			await SendMessageToConnectionId(connectionId, "CreateObject3D", json);
 			
-			await SendMessageToConnectionId(connectionId, "RenderModel", _resourceMapping["model_cube.jm"]);
 
-			await Task.Delay(1000);
-
-			await SendMessageToConnectionId(connectionId, "TextureData", _resourceMapping["texture_cat.jpg"]);
 		}
 
 		public void  OnDisconnected(string connectionId)
@@ -214,6 +237,13 @@ namespace CloudServiceTest
 
 			public string model;
 			public string texture;
+
+			public Object3D()
+			{
+				position = Vector3.Zero;
+				rotation = Vector3.Zero;
+				scale = Vector3.One;
+			}
 		}
 	}
 }

@@ -5,9 +5,9 @@ var gl = canvas.getContext('webgl');
 
 var shaderProgram;
 
-var models = [];
+var modelMap = new Map();
+var textureMap = new Map();
 var objects = [];
-var testTexture = null;
 var testIndex = 0;
 
 class Object3D {
@@ -17,7 +17,9 @@ class Object3D {
         this.scale = [1, 1, 1];
         this.uWorldMatrixLocation = gl.getUniformLocation(shaderProgram, "uWorldMatrix");
 
+        this.name = null;
         this.model = null;
+        this.texture = null;
     }
 
 
@@ -49,17 +51,17 @@ gl.enable(gl.DEPTH_TEST);
 gl.depthFunc(gl.LESS);
 
 
-function initVertices(picture) {
+function createTexture(name,picture) {
     const image = new Image();
     image.src = picture;
     image.onload = function() {
-        initTexture(image);
+        initTexture(name, image);
     };
 }
 
-function initTexture(image) {
-    testTexture = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_2D, testTexture);
+function initTexture(name, image) {
+    let texture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, texture);
 
     gl.texImage2D(
         gl.TEXTURE_2D,
@@ -78,6 +80,36 @@ function initTexture(image) {
 
     // 解绑纹理
     gl.bindTexture(gl.TEXTURE_2D, null);
+
+    textureMap.set(name, texture);
+}
+
+function createObject3D(objectData) {
+    //create 3d object 
+    const object = new Object3D(gl, shaderProgram);
+
+    object.name = objectData.name;
+
+    let model = modelMap.get();
+
+    if (modelMap.has(objectData.model)) {
+        object.model = modelMap.get(objectData.model);
+    }
+    else {
+        console.error("Model " + objectData.model +" not exist.");
+    }
+
+    if (textureMap.has(objectData.texture)) {
+        object.texture = textureMap.get(objectData.texture);
+    }
+    else {
+        console.error("Texture " + objectData.model + " not exist.");
+    }
+
+    objects.push(object);
+
+    let worldMatrix = getWorldMatrix(object.position, object.rotation, object.scale);
+    gl.uniformMatrix4fv(object.uWorldMatrixLocation, false, worldMatrix);
 }
 
 async function loadShaderFile(url) {
@@ -137,7 +169,7 @@ async function initWebGL() {
         console.log("load shaders successlly.")
     }
 
-    shaderProgram = createShaderProgram(gl, vsSource, fsSource);
+    shaderProgram = await createShaderProgram(gl, vsSource, fsSource);
     if (!shaderProgram) {
         console.error('Failed to create shader program.');
         return;
@@ -148,12 +180,23 @@ async function initWebGL() {
 
     gl.useProgram(shaderProgram);
 
-    // Continue with WebGL setup and rendering...
 
-    //createVertexBuffer(models[0]);
+    // set root parameter
+
+    const viewMatrix = getViewMatrix(camera);
+    const uViewMatrixLocation = gl.getUniformLocation(shaderProgram, "uViewMatrix");
+    gl.uniformMatrix4fv(uViewMatrixLocation, false, viewMatrix);
+
+    const projectionMatrix = getProjectionMatrix();
+    const uProjectionMatrixLocation = gl.getUniformLocation(shaderProgram, "uProjectionMatrix");
+    gl.uniformMatrix4fv(uProjectionMatrixLocation, false, projectionMatrix);
+
+    const eye = leftToRight(camera.position);
+    const uEyeLocation = gl.getUniformLocation(shaderProgram, "uEye");
+    gl.uniform3fv(uEyeLocation, eye);
 }
 
-function createVertexBuffer(data) {     
+function createVertexBuffer(name, data) {     
     let vers = [];
     data.vertices.forEach(function (vertex, index) {
         vers.push(vertex.position.X);
@@ -167,8 +210,7 @@ function createVertexBuffer(data) {
     });
     testIndex = data.indices.length;
     let model = { vertices: vers, indices: data.indices };
-    models.push(model);
-
+    modelMap.set(name,model);
 
     let vertices = model.vertices;
     let indices = model.indices;
@@ -188,13 +230,12 @@ function createVertexBuffer(data) {
     const uvAttributeLocation = gl.getAttribLocation(shaderProgram, 'aUv');
 
     let vertexSize = 8 * Float32Array.BYTES_PER_ELEMENT;
-    console.log(vertexSize);
 
     // 设置 position 属性指针
     gl.vertexAttribPointer(
         positionAttributeLocation,
         3,          // position's (x, y, z) 
-        gl.FLOAT,   
+        gl.FLOAT,
         false,      // no need for standardization
         vertexSize, // per vertex's lenth
         0           // offset
@@ -212,56 +253,16 @@ function createVertexBuffer(data) {
     );
     gl.enableVertexAttribArray(normalAttributeLocation);
 
-
     // 设置 uv 属性指针
     gl.vertexAttribPointer(
         uvAttributeLocation,
         2,                  //  uv's (x, y)
-        gl.FLOAT,           
+        gl.FLOAT,
         false,              // no need for standardization
         vertexSize, // per vertex's lenth
         6 * Float32Array.BYTES_PER_ELEMENT  // offset
     );
     gl.enableVertexAttribArray(uvAttributeLocation);
-
-    //create 3d object 
-    const object = new Object3D(gl, shaderProgram);
-    object.model = model;
-    objects.push(object);
-
-    // set root parameter
-    let worldMatrix = getWorldMatrix(object.position, object.rotation, object.scale);
-    gl.uniformMatrix4fv(object.uWorldMatrixLocation, false, worldMatrix);
-
-    const viewMatrix = getViewMatrix(camera); 
-    const uViewMatrixLocation = gl.getUniformLocation(shaderProgram, "uViewMatrix");
-    gl.uniformMatrix4fv(uViewMatrixLocation, false, viewMatrix);
-
-    const projectionMatrix = getProjectionMatrix();
-    const uProjectionMatrixLocation = gl.getUniformLocation(shaderProgram, "uProjectionMatrix");
-    gl.uniformMatrix4fv(uProjectionMatrixLocation, false, projectionMatrix);
-
-    const eye = leftToRight(camera.position);
-    const uEyeLocation = gl.getUniformLocation(shaderProgram, "uEye");
-    gl.uniform3fv(uEyeLocation, eye);
-
-
-    //gl.clearColor(1.0, 1.0, 0.0, 1.0);
-
-    //gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);    
-
-    ////gl.drawArrays(gl.TRIANGLES, 0, vertices.length / 7);
-    //gl.drawElements(
-    //    gl.TRIANGLES,      // draw mode: triangle
-    //    indices.length,    
-    //    gl.UNSIGNED_SHORT, 
-    //    0                  // offset
-    //);
-
-    //const error = gl.getError();
-    //if (error !== gl.NO_ERROR) {
-    //    console.error('WebGL Error:', error);
-    //}
 }
 
 //position, rotation, scale are int arrays, 
@@ -316,7 +317,7 @@ function testRoot(deltaTime) {
         let newWorldMatrix = getWorldMatrix(object.position, object.rotation, object.scale);
         gl.uniformMatrix4fv(object.uWorldMatrixLocation, false, newWorldMatrix);
 
-        gl.bindTexture(gl.TEXTURE_2D, testTexture);
+        gl.bindTexture(gl.TEXTURE_2D, object.texture);
         gl.activeTexture(gl.TEXTURE0); // 激活纹理单元 0
         gl.uniform1i(gl.getUniformLocation(shaderProgram, 'uSampler'), 0);
 

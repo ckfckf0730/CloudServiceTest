@@ -17,13 +17,23 @@
 		console.log("Connected with connectionId:", renderingConnection.connectionId);
 	});
 
-	renderingConnection.on("RenderModel", function (message) {
-		const data = JSON.parse(message);
-		createVertexBuffer(data);
+	renderingConnection.on("CreateModel", function (message) {
+		const model = JSON.parse(message);
+		const data = JSON.parse(model.data);
+
+		createVertexBuffer(model.name, data);
 	});
 
-	renderingConnection.on("TextureData", function (message) {
-		initVertices(message);
+	renderingConnection.on("CreateTexture", function (message) {
+		const texture = JSON.parse(message);
+
+		createTexture(texture.name, texture.data);
+	});
+
+	renderingConnection.on("CreateObject3D", function (message) {
+		const data = JSON.parse(message);
+
+		createObject3D(data);
 	});
 
 	var indexedDB = null;
