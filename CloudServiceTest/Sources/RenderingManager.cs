@@ -151,23 +151,23 @@ namespace CloudServiceTest
 
 		public async Task InitPageTest(string connectionId)
 		{
-			var model = new
-			{
-				name = "model_cube.jm", 
-				data = _resourceMapping["model_cube.jm"] 
-			};
-			var modelJson = JsonConvert.SerializeObject(model);
+			//var model = new
+			//{
+			//	name = "model_cube.jm", 
+			//	data = _resourceMapping["model_cube.jm"] 
+			//};
+			//var modelJson = JsonConvert.SerializeObject(model);
 
-			await SendMessageToConnectionId(connectionId, "CreateModel", modelJson);
+			//await SendMessageToConnectionId(connectionId, "CreateModel", modelJson);
 
-			var texture = new
-			{
-				name = "texture_cat.jpg",
-				data = _resourceMapping["texture_cat.jpg"]
-			};
-			var modelTexture = JsonConvert.SerializeObject(texture);
+			//var texture = new
+			//{
+			//	name = "texture_cat.jpg",
+			//	data = _resourceMapping["texture_cat.jpg"]
+			//};
+			//var modelTexture = JsonConvert.SerializeObject(texture);
 
-			await SendMessageToConnectionId(connectionId, "CreateTexture", modelTexture);
+			//await SendMessageToConnectionId(connectionId, "CreateTexture", modelTexture);
 
 			await Task.Delay(1000);
 
@@ -212,6 +212,17 @@ namespace CloudServiceTest
 			}
 		}
 
+		public async Task RequireResource(string connectionId, string msgType, string message)
+		{
+			var data = new
+			{
+				name = message,
+				data = _resourceMapping[message]
+			};
+			var msg = JsonConvert.SerializeObject(data);
+
+			await SendMessageToConnectionId(connectionId, msgType, msg);
+		}
 
 
 		public struct TestVertex

@@ -10,6 +10,8 @@ var textureMap = new Map();
 var objects = [];
 var testIndex = 0;
 
+var requestResource = null;
+
 class Object3D {
     constructor(gl, shaderProgram) {
         this.position = [0, 0, 0];
@@ -96,7 +98,8 @@ function createObject3D(objectData) {
         object.model = modelMap.get(objectData.model);
     }
     else {
-        console.error("Model " + objectData.model +" not exist.");
+        console.error("Model " + objectData.model + " not exist.");
+        requestResource("CreateModel", objectData.model);
     }
 
     if (textureMap.has(objectData.texture)) {
@@ -104,6 +107,7 @@ function createObject3D(objectData) {
     }
     else {
         console.error("Texture " + objectData.model + " not exist.");
+        requestResource("CreateTexture", objectData.texture);
     }
 
     objects.push(object);

@@ -22,7 +22,10 @@ namespace CloudServiceTest
 			await base.OnConnectedAsync();
 		}
 
-		
+		public async Task RequireResource(string connectionId, string msgType, string message)
+		{
+			await _renderingManager.RequireResource(connectionId, msgType, message);
+		}
 
 
 		public override async Task OnDisconnectedAsync(Exception? exception)

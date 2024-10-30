@@ -36,6 +36,15 @@
 		createObject3D(data);
 	});
 
+	function requireResource(msgType, message) {
+		renderingConnection.invoke("RequireResource", renderingConnection.connectionId, msgType, message).
+		catch(function (err) {
+			return console.error(err.toString());
+		});
+	}
+
+	requestResource = requireResource;
+
 	var indexedDB = null;
 
 	startInit();

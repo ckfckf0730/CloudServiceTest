@@ -7,8 +7,11 @@ var shaderProgram;
 
 var modelMap = new Map();
 var textureMap = new Map();
+var waitResourceObjects = new Map();
 var objects = [];
 var testIndex = 0;
+
+var requestResource = null;
 
 class Object3D {
     constructor(gl, shaderProgram) {
@@ -82,6 +85,11 @@ function initTexture(name, image) {
     gl.bindTexture(gl.TEXTURE_2D, null);
 
     textureMap.set(name, texture);
+
+    if (waitResourceObjects.has(name)) {
+        waitResourceObjects.get(name).texture = texture;
+        waitResourceObjects.delete(name);
+    }
 }
 
 function createObject3D(objectData) {
@@ -96,14 +104,18 @@ function createObject3D(objectData) {
         object.model = modelMap.get(objectData.model);
     }
     else {
-        console.error("Model " + objectData.model +" not exist.");
+        console.log("Model " + objectData.model + " not exist.");
+        requestResource("CreateModel", objectData.model);
+        waitResourceObjects.set(objectData.model, object);
     }
 
     if (textureMap.has(objectData.texture)) {
         object.texture = textureMap.get(objectData.texture);
     }
     else {
-        console.error("Texture " + objectData.model + " not exist.");
+        console.log("Texture " + objectData.model + " not exist.");
+        requestResource("CreateTexture", objectData.texture);
+        waitResourceObjects.set(objectData.texture, object);
     }
 
     objects.push(object);
@@ -263,6 +275,11 @@ function createVertexBuffer(name, data) {
         6 * Float32Array.BYTES_PER_ELEMENT  // offset
     );
     gl.enableVertexAttribArray(uvAttributeLocation);
+
+    if (waitResourceObjects.has(name)) {
+        waitResourceObjects.get(name).model = model;
+        waitResourceObjects.delete(name);
+    }
 }
 
 //position, rotation, scale are int arrays, 
