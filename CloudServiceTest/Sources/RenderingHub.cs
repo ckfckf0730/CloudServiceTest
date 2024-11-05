@@ -7,17 +7,27 @@ namespace CloudServiceTest
 	public class RenderingHub : Hub
 	{
 		private readonly RenderingManager _renderingManager;
+		private readonly IServiceScopeFactory _serviceScopeFactory;
 
-		public RenderingHub(RenderingManager renderingManager)
+		public RenderingHub(RenderingManager renderingManager, IServiceScopeFactory serviceScopeFactory)
 		{
 			_renderingManager = renderingManager;
+			_serviceScopeFactory = serviceScopeFactory;
 		}
 
 
 		public override async Task OnConnectedAsync()
 		{
-			var pageId = Context.GetHttpContext()?.Request.Query["pageId"];
-			_renderingManager.OnConnected(Context.ConnectionId, pageId);
+			var userName = Context.GetHttpContext()?.Request.Query["userName"];
+			await _renderingManager.OnConnected(Context.ConnectionId, userName);
+
+			var connectionId = Context.ConnectionId;
+			Task.Run(async () =>
+			{
+				using var scope = _serviceScopeFactory.CreateScope();
+				var newRenderingManager = scope.ServiceProvider.GetRequiredService<RenderingManager>();
+				await newRenderingManager.InitAdditionalResources(connectionId, userName);
+			});
 
 			await base.OnConnectedAsync();
 		}

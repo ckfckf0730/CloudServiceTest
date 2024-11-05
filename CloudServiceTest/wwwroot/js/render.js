@@ -96,6 +96,16 @@ function createObject3D(objectData) {
     //create 3d object 
     const object = new Object3D(gl, shaderProgram);
 
+    object.position[0] = objectData.position.X;
+    object.position[1] = objectData.position.Y;
+    object.position[2] = objectData.position.Z;
+    object.rotation[0] = objectData.rotation.X;
+    object.rotation[1] = objectData.rotation.Y;
+    object.rotation[2] = objectData.rotation.Z;
+    object.scale[0] = objectData.scale.X;
+    object.scale[1] = objectData.scale.Y;
+    object.scale[2] = objectData.scale.Z;
+
     object.name = objectData.name;
 
     let model = modelMap.get();
@@ -328,6 +338,10 @@ function testRoot(deltaTime) {
 
 
     objects.forEach(function (object, index) {
+        if (object.model == null) {
+            return;
+        }
+
         var rotation = deltaTime * 0.001;
         object.rotation[1] += rotation;
 

@@ -1,8 +1,11 @@
-﻿using CloudServiceTest.Models.Database;
+﻿using CloudServiceTest.Models;
+using CloudServiceTest.Models.Database;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Concurrent;
 using System.Numerics;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
@@ -10,16 +13,39 @@ namespace CloudServiceTest
 {
 	public class RenderingManager
 	{
-		private readonly Dictionary<string, string> _connectionMapping = new Dictionary<string, string>();
-		private readonly Dictionary<string, string> _resourceMapping = new Dictionary<string, string>();
+		private static bool _isInit = false;
+		private readonly static ConcurrentDictionary<string, string> _connectionMapping = new ConcurrentDictionary<string, string>();
+		private readonly static ConcurrentDictionary<string, string> _resourceMapping = new ConcurrentDictionary<string, string>();
+
 		private readonly IHubContext<RenderingHub> _hubContext;
 		private readonly IWebHostEnvironment _hostingEnvironment;
 
-		public RenderingManager(IHubContext<RenderingHub> hubContext, IWebHostEnvironment hostingEnvironment)
+		private readonly FileStorageService _fileStorageService;
+		private readonly DatabaseService _databaseService;
+		private readonly SignInManager<ApplicationUser> _signInManager;
+		private readonly UserManager<ApplicationUser> _userManager;
+
+		public RenderingManager(IHubContext<RenderingHub> hubContext, IWebHostEnvironment hostingEnvironment,
+			FileStorageService fileStorageService, DatabaseService databaseService,
+			SignInManager<ApplicationUser> signInManager, UserManager<ApplicationUser> userManager)
 		{
 			_hubContext = hubContext;
 			_hostingEnvironment = hostingEnvironment;
 
+			_fileStorageService = fileStorageService;
+			_databaseService = databaseService;
+			_signInManager = signInManager;
+			_userManager = userManager;
+
+			if (!_isInit)
+			{
+				_isInit = true;
+				InitStatic();
+			}
+		}
+
+		public void InitStatic()
+		{
 			/*
 			// test model data
 			TestVertex[] vertices = new TestVertex[24];
@@ -107,7 +133,7 @@ namespace CloudServiceTest
 
 			*/
 
-			
+
 			//_resourceMapping.Add("model_cube.jm", json);
 
 			var fileName = "model_cube.jm";
@@ -115,7 +141,7 @@ namespace CloudServiceTest
 			var fullPath = wwwRootPath + "\\resource\\" + fileName;
 
 			var model = File.ReadAllText(fullPath);
-			_resourceMapping.Add(fileName, model);
+			_resourceMapping.TryAdd(fileName, model);
 
 			fileName = "texture_cat.jpg";
 			fullPath = wwwRootPath + "\\resource\\" + fileName;
@@ -132,44 +158,26 @@ namespace CloudServiceTest
 			};
 
 			base64String = $"data:{mimeType};base64,{base64String}";
-			_resourceMapping.Add(fileName, base64String);
+			_resourceMapping.TryAdd(fileName, base64String);
 		}
 
-		public void OnConnected(string connectionId, string pageId)
+		public async Task OnConnected(string connectionId, string? userName)
 		{
 			if (!_connectionMapping.ContainsKey(connectionId))
 			{
-				_connectionMapping.Add(connectionId, pageId);
+				_connectionMapping.TryAdd(connectionId, userName);
 			}
 			else
 			{
-				_connectionMapping[connectionId] = pageId;
+				_connectionMapping[connectionId] = userName;
 			}
 
-			InitPageTest(connectionId);
+			await InitPageTest(connectionId, userName);
 		}
 
-		public async Task InitPageTest(string connectionId)
+		public async Task InitPageTest(string connectionId, string? userName)
 		{
-			//var model = new
-			//{
-			//	name = "model_cube.jm", 
-			//	data = _resourceMapping["model_cube.jm"] 
-			//};
-			//var modelJson = JsonConvert.SerializeObject(model);
-
-			//await SendMessageToConnectionId(connectionId, "CreateModel", modelJson);
-
-			//var texture = new
-			//{
-			//	name = "texture_cat.jpg",
-			//	data = _resourceMapping["texture_cat.jpg"]
-			//};
-			//var modelTexture = JsonConvert.SerializeObject(texture);
-
-			//await SendMessageToConnectionId(connectionId, "CreateTexture", modelTexture);
-
-			await Task.Delay(1000);
+			//await Task.Delay(1000);
 
 			var object3D = new Object3D();
 			object3D.name = "Test";
@@ -179,15 +187,58 @@ namespace CloudServiceTest
 			var json = JsonConvert.SerializeObject(object3D);
 
 			await SendMessageToConnectionId(connectionId, "CreateObject3D", json);
-			
 
 		}
 
-		public void  OnDisconnected(string connectionId)
+		public async Task InitAdditionalResources(string connectionId, string? userName)
+		{
+			var list = _databaseService.LoadFileRecord(userName);
+			int xOff = -5;
+
+			foreach (var fileRecord in list)
+			{
+				var stream = _fileStorageService.DownloadFileAsync("sharedfolders", fileRecord.Id.ToString()).Result;
+				using (var memoryStream = new MemoryStream())
+				{
+					stream.CopyTo(memoryStream);
+					var imageBytes = memoryStream.ToArray();
+					var base64String = Convert.ToBase64String(imageBytes);
+
+					var fileExtension = Path.GetExtension(fileRecord.FileName).ToLower();
+					string mimeType = fileExtension switch
+					{
+						".jpg" or ".jpeg" => "image/jpeg",
+						".png" => "image/png",
+						".gif" => "image/gif",
+						".bmp" => "image/bmp",
+						_ => "application/octet-stream"  // 默认 MIME 类型，处理未知的扩展名
+					};
+
+					var fileData = $"data:{mimeType};base64,{base64String}";
+					var fileName = fileRecord.Id.ToString() + fileExtension;
+
+					_resourceMapping.TryAdd(fileName, fileData);
+
+					var object3D = new Object3D();
+					object3D.position = new Vector3(xOff, -3, 6);
+					xOff += 2;
+					object3D.name = fileName;
+					object3D.model = "model_cube.jm";
+					object3D.texture = fileName;
+
+					var json = JsonConvert.SerializeObject(object3D);
+
+					await SendMessageToConnectionId(connectionId, "CreateObject3D", json);
+
+				}
+			}
+		}
+
+		public void OnDisconnected(string connectionId)
 		{
 			if (_connectionMapping.ContainsKey(connectionId))
 			{
-				_connectionMapping.Remove(connectionId);
+				_connectionMapping.TryRemove(connectionId, out string? value);
 			}
 		}
 

@@ -7,6 +7,7 @@ var shaderProgram;
 
 var modelMap = new Map();
 var textureMap = new Map();
+var waitResourceObjects = new Map();
 var objects = [];
 var testIndex = 0;
 
@@ -84,11 +85,27 @@ function initTexture(name, image) {
     gl.bindTexture(gl.TEXTURE_2D, null);
 
     textureMap.set(name, texture);
+
+    if (waitResourceObjects.has(name)) {
+        waitResourceObjects.get(name).texture = texture;
+        waitResourceObjects.delete(name);
+    }
 }
 
 function createObject3D(objectData) {
     //create 3d object 
     const object = new Object3D(gl, shaderProgram);
+
+    object.position[0] = objectData.position.X;
+    object.position[1] = objectData.position.Y;
+    object.position[2] = objectData.position.Z;
+    object.rotation[0] = objectData.rotation.X;
+    object.rotation[1] = objectData.rotation.Y;
+    object.rotation[2] = objectData.rotation.Z;
+    object.scale[0] = objectData.scale.X;
+    object.scale[1] = objectData.scale.Y;
+    object.scale[2] = objectData.scale.Z;
+    console.error(object.position);
 
     object.name = objectData.name;
 
@@ -98,16 +115,18 @@ function createObject3D(objectData) {
         object.model = modelMap.get(objectData.model);
     }
     else {
-        console.error("Model " + objectData.model + " not exist.");
+        console.log("Model " + objectData.model + " not exist.");
         requestResource("CreateModel", objectData.model);
+        waitResourceObjects.set(objectData.model, object);
     }
 
     if (textureMap.has(objectData.texture)) {
         object.texture = textureMap.get(objectData.texture);
     }
     else {
-        console.error("Texture " + objectData.model + " not exist.");
+        console.log("Texture " + objectData.model + " not exist.");
         requestResource("CreateTexture", objectData.texture);
+        waitResourceObjects.set(objectData.texture, object);
     }
 
     objects.push(object);
@@ -267,6 +286,11 @@ function createVertexBuffer(name, data) {
         6 * Float32Array.BYTES_PER_ELEMENT  // offset
     );
     gl.enableVertexAttribArray(uvAttributeLocation);
+
+    if (waitResourceObjects.has(name)) {
+        waitResourceObjects.get(name).model = model;
+        waitResourceObjects.delete(name);
+    }
 }
 
 //position, rotation, scale are int arrays, 
@@ -315,6 +339,10 @@ function testRoot(deltaTime) {
 
 
     objects.forEach(function (object, index) {
+        if (object.model == null) {
+            return;
+        }
+
         var rotation = deltaTime * 0.001;
         object.rotation[1] += rotation;
 

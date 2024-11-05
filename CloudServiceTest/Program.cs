@@ -17,7 +17,7 @@ builder.Services.AddSingleton<CloudServiceTest.BingSearchService>();
 builder.Services.AddScoped<CloudServiceTest.DatabaseService>();
 builder.Services.Configure<CloudServiceTest.SmtpSettings>(builder.Configuration.GetSection("Smtp"));
 builder.Services.AddTransient<CloudServiceTest.IEmailSender, CloudServiceTest.EmailSender>();
-builder.Services.AddSingleton<CloudServiceTest.RenderingManager>();
+builder.Services.AddScoped<CloudServiceTest.RenderingManager>();
 
 // add database connection
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");

@@ -9,8 +9,10 @@
 </p>
 
 <script>
+	var userName = '@User.Identity.Name';
+
 	const renderingConnection = new signalR.HubConnectionBuilder()
-		.withUrl("/renderingHub?pageId=page1")
+		.withUrl(`/renderingHub?userName=${userName}`)
 		.build();
 
 	renderingConnection.start().then(() => {
