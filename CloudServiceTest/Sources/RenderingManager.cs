@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Newtonsoft.Json;
+using Org.BouncyCastle.Ocsp;
 using System;
 using System.Collections.Concurrent;
 using System.Numerics;
@@ -46,119 +47,44 @@ namespace CloudServiceTest
 
 		public void InitStatic()
 		{
-			/*
-			// test model data
-			TestVertex[] vertices = new TestVertex[24];
-			vertices[0].position = new Vector3(-0.5f, 0.5f, -0.5f);
-			vertices[1].position = new Vector3(0.5f, 0.5f, -0.5f);
-			vertices[2].position = new Vector3(-0.5f, -0.5f, -0.5f);
-			vertices[3].position = new Vector3(0.5f, -0.5f, -0.5f);
+			//// test model data
+			//TestVertex[] vertices = new TestVertex[4];
+			//vertices[0].position = new Vector3(-0.5f, 0.5f, 0);
+			//vertices[1].position = new Vector3(0.5f, 0.5f, 0);
+			//vertices[2].position = new Vector3(-0.5f, -0.5f, 0);
+			//vertices[3].position = new Vector3(0.5f, -0.5f, 0);
 
-			vertices[0].normal = new Vector3(0, 0, -1);
-			vertices[1].normal = new Vector3(0, 0, -1);
-			vertices[2].normal = new Vector3(0, 0, -1);
-			vertices[3].normal = new Vector3(0, 0, -1);
+			//vertices[0].normal = new Vector3(0, 0, -1);
+			//vertices[1].normal = new Vector3(0, 0, -1);
+			//vertices[2].normal = new Vector3(0, 0, -1);
+			//vertices[3].normal = new Vector3(0, 0, -1);
 
-			vertices[4].position = new Vector3(-0.5f, 0.5f, 0.5f);
-			vertices[5].position = new Vector3(0.5f, 0.5f, 0.5f);
-			vertices[6].position = new Vector3(-0.5f, 0.5f, -0.5f);
-			vertices[7].position = new Vector3(0.5f, 0.5f, -0.5f);
+			//for (int i = 0; i < vertices.Length; i += 4)
+			//{
+			//	vertices[i].uv = new Vector2(0, 0);
+			//	vertices[i + 1].uv = new Vector2(1, 0);
+			//	vertices[i + 2].uv = new Vector2(0, 1);
+			//	vertices[i + 3].uv = new Vector2(1, 1);
+			//}
 
-			vertices[4].normal = new Vector3(0, 1, 0);
-			vertices[5].normal = new Vector3(0, 1, 0);
-			vertices[6].normal = new Vector3(0, 1, 0);
-			vertices[7].normal = new Vector3(0, 1, 0);
+			//int[] indices =
+			//	[0, 1, 2, 2, 1, 3];
 
-			vertices[8].position = new Vector3(-0.5f, 0.5f, 0.5f);
-			vertices[9].position = new Vector3(-0.5f, 0.5f, -0.5f);
-			vertices[10].position = new Vector3(-0.5f, -0.5f, 0.5f);
-			vertices[11].position = new Vector3(-0.5f, -0.5f, -0.5f);
+			//var data = new RenderingModel();
+			//data.vertices = vertices;
+			//data.indices = indices;
 
-			vertices[8].normal = new Vector3(-1, 0, 0);
-			vertices[9].normal = new Vector3(-1, 0, 0);
-			vertices[10].normal = new Vector3(-1, 0, 0);
-			vertices[11].normal = new Vector3(-1, 0, 0);
+			//var json = JsonConvert.SerializeObject(data,Formatting.Indented);
+			//var fileName2 = "model_quad.jm";
+			//string wwwRootPath2 = _hostingEnvironment.WebRootPath;
+			//var fullPath2 = wwwRootPath2 + "\\resource\\" + fileName2;
 
-			vertices[12].position = new Vector3(0.5f, 0.5f, -0.5f);
-			vertices[13].position = new Vector3(0.5f, 0.5f, 0.5f);
-			vertices[14].position = new Vector3(0.5f, -0.5f, -0.5f);
-			vertices[15].position = new Vector3(0.5f, -0.5f, 0.5f);
+			//File.WriteAllText(fullPath2, json);
 
-			vertices[12].normal = new Vector3(1, 0, 0);
-			vertices[13].normal = new Vector3(1, 0, 0);
-			vertices[14].normal = new Vector3(1, 0, 0);
-			vertices[15].normal = new Vector3(1, 0, 0);
+			//_resourceMapping.TryAdd("model_quad.jm", json);
 
-			vertices[16].position = new Vector3(0.5f, 0.5f, 0.5f);
-			vertices[17].position = new Vector3(-0.5f, 0.5f, 0.5f);
-			vertices[18].position = new Vector3(0.5f, -0.5f, 0.5f);
-			vertices[19].position = new Vector3(-0.5f, -0.5f, 0.5f);
-
-			vertices[16].normal = new Vector3(0, 0, 1);
-			vertices[17].normal = new Vector3(0, 0, 1);
-			vertices[18].normal = new Vector3(0, 0, 1);
-			vertices[19].normal = new Vector3(0, 0, 1);
-
-			vertices[20].position = new Vector3(-0.5f, -0.5f, -0.5f);
-			vertices[21].position = new Vector3(0.5f, -0.5f, -0.5f);
-			vertices[22].position = new Vector3(-0.5f, -0.5f, 0.5f);
-			vertices[23].position = new Vector3(0.5f, -0.5f, 0.5f);
-
-			vertices[20].normal = new Vector3(0, -1, 0);
-			vertices[21].normal = new Vector3(0, -1, 0);
-			vertices[22].normal = new Vector3(0, -1, 0);
-			vertices[23].normal = new Vector3(0, -1, 0);
-
-			for (int i = 0; i < vertices.Length; i += 4)
-			{
-				vertices[i].uv = new Vector2(0, 0);
-				vertices[i + 1].uv = new Vector2(1, 0);
-				vertices[i + 2].uv = new Vector2(0, 1);
-				vertices[i + 3].uv = new Vector2(1, 1);
-			}
-
-			int[] indices =
-				[
-				0, 1, 2, 2, 1, 3,
-				4, 5, 6, 6, 5, 7,
-				8,9,10,10,9,11,
-				12,13,14,14,13,15,
-				16,17,18,18,17,19,
-				20,21,22,22,21,23
-				];
-
-			var data = new RenderingModel();
-			data.vertices = vertices;
-			data.indices = indices;
-
-			*/
-
-
-			//_resourceMapping.Add("model_cube.jm", json);
-
-			var fileName = "model_cube.jm";
-			string wwwRootPath = _hostingEnvironment.WebRootPath;
-			var fullPath = wwwRootPath + "\\resource\\" + fileName;
-
-			var model = File.ReadAllText(fullPath);
-			_resourceMapping.TryAdd(fileName, model);
-
-			fileName = "texture_cat.jpg";
-			fullPath = wwwRootPath + "\\resource\\" + fileName;
-			var imageBytes = File.ReadAllBytes(fullPath);
-			var base64String = Convert.ToBase64String(imageBytes);
-			var fileExtension = Path.GetExtension(fileName).ToLower();
-			string mimeType = fileExtension switch
-			{
-				".jpg" or ".jpeg" => "image/jpeg",
-				".png" => "image/png",
-				".gif" => "image/gif",
-				".bmp" => "image/bmp",
-				_ => "application/octet-stream"  // 默认 MIME 类型，处理未知的扩展名
-			};
-
-			base64String = $"data:{mimeType};base64,{base64String}";
-			_resourceMapping.TryAdd(fileName, base64String);
+			//GetResourceFromWWWRoot("model_cube.jm");
+			//GetResourceFromWWWRoot("texture_cat.jpg",true);
 		}
 
 		public async Task OnConnected(string connectionId, string? userName)
@@ -177,17 +103,32 @@ namespace CloudServiceTest
 
 		public async Task InitPageTest(string connectionId, string? userName)
 		{
-			//await Task.Delay(1000);
+			var fullPath = _hostingEnvironment.WebRootPath + "\\resource\\SampleScene.scenejson";
+			var json = File.ReadAllText(fullPath);
+
+			var objects = JsonConvert.DeserializeObject<Object3D[]>(json);
+			//foreach(var obj in objects)
+			//{
+			//	obj.texture = "texture_cat.jpg";
+			//	var modelName = obj.model.ToLower();
+			//	modelName = "model_" + modelName + ".jm";
+			//	obj.model = modelName;
+
+			//	json = JsonConvert.SerializeObject(obj);
+
+			//	await SendMessageToConnectionId(connectionId, "CreateObject3D", json);
+			//	//return;
+			//}
+
 
 			var object3D = new Object3D();
 			object3D.name = "Test";
-			object3D.model = "model_cube.jm";
+			object3D.model = "model_quad.jm";
 			object3D.texture = "texture_cat.jpg";
 
-			var json = JsonConvert.SerializeObject(object3D);
+			json = JsonConvert.SerializeObject(object3D);
 
 			await SendMessageToConnectionId(connectionId, "CreateObject3D", json);
-
 		}
 
 		public async Task InitAdditionalResources(string connectionId, string? userName)
@@ -242,6 +183,60 @@ namespace CloudServiceTest
 			}
 		}
 
+		public string? GetResource(string resName, bool isTexture = false)
+		{
+			string? data;
+			if(_resourceMapping.TryGetValue(resName, out data))
+			{
+				return data;
+			}
+			
+			if(GetResourceFromWWWRoot(resName, isTexture,out data))
+			{
+				return data;
+			}
+
+			//other ways to get resource
+
+			return null;
+		}
+
+		public bool GetResourceFromWWWRoot(string fileName, bool isTexture, out string? data)
+		{
+			string wwwRootPath = _hostingEnvironment.WebRootPath;
+			var fullPath = wwwRootPath + "\\resource\\" + fileName;
+			if (!File.Exists(fullPath))
+			{
+				data = null;
+				return false;
+			}
+
+			if (isTexture)
+			{
+				var imageBytes = File.ReadAllBytes(fullPath);
+				var base64String = Convert.ToBase64String(imageBytes);
+				var fileExtension = Path.GetExtension(fileName).ToLower();
+				string mimeType = fileExtension switch
+				{
+					".jpg" or ".jpeg" => "image/jpeg",
+					".png" => "image/png",
+					".gif" => "image/gif",
+					".bmp" => "image/bmp",
+					_ => "application/octet-stream"  // 默认 MIME 类型，处理未知的扩展名
+				};
+
+				data = $"data:{mimeType};base64,{base64String}";
+				_resourceMapping.TryAdd(fileName, data);
+			}
+			else
+			{
+				data = File.ReadAllText(fullPath);
+				_resourceMapping.TryAdd(fileName, data);
+			}
+
+			return true;
+		}
+
 		public async Task SendMessageToConnectionId(string connectionId, string messageType, string message)
 		{
 			if (connectionId != null)
@@ -265,10 +260,17 @@ namespace CloudServiceTest
 
 		public async Task RequireResource(string connectionId, string msgType, string message)
 		{
+			bool isTexture = false;
+			if(msgType == "CreateTexture")
+			{
+				isTexture = true;
+			}
+			var respData = GetResource(message, isTexture);
+
 			var data = new
 			{
 				name = message,
-				data = _resourceMapping[message]
+				data = respData
 			};
 			var msg = JsonConvert.SerializeObject(data);
 

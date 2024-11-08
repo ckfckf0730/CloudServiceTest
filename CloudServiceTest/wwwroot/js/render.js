@@ -9,7 +9,7 @@ var modelMap = new Map();
 var textureMap = new Map();
 var waitResourceObjects = new Map();
 var objects = [];
-var testIndex = 0;
+//var testIndex = 0;
 
 var requestResource = null;
 
@@ -108,8 +108,6 @@ function createObject3D(objectData) {
 
     object.name = objectData.name;
 
-    let model = modelMap.get();
-
     if (modelMap.has(objectData.model)) {
         object.model = modelMap.get(objectData.model);
     }
@@ -123,7 +121,7 @@ function createObject3D(objectData) {
         object.texture = textureMap.get(objectData.texture);
     }
     else {
-        console.log("Texture " + objectData.model + " not exist.");
+        console.log("Texture " + objectData.texture + " not exist.");
         requestResource("CreateTexture", objectData.texture);
         waitResourceObjects.set(objectData.texture, object);
     }
@@ -219,6 +217,7 @@ async function initWebGL() {
 }
 
 function createVertexBuffer(name, data) {     
+
     let vers = [];
     data.vertices.forEach(function (vertex, index) {
         vers.push(vertex.position.X);
@@ -230,22 +229,13 @@ function createVertexBuffer(name, data) {
         vers.push(vertex.uv.X);
         vers.push(vertex.uv.Y);
     });
-    testIndex = data.indices.length;
-    let model = { vertices: vers, indices: data.indices };
-    modelMap.set(name,model);
 
-    let vertices = model.vertices;
-    let indices = model.indices;
+    let model = { vertices: vers, indices: data.indices, vBuffer: null, iBuffer: null };
 
     //create vertex buffer
-    const vertexBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
-
-    //create index buffer
-    const indexBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
+    model.vBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, model.vBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vers), gl.STATIC_DRAW);
 
     const positionAttributeLocation = gl.getAttribLocation(shaderProgram, 'aPosition');
     const normalAttributeLocation = gl.getAttribLocation(shaderProgram, 'aNormal');
@@ -286,10 +276,34 @@ function createVertexBuffer(name, data) {
     );
     gl.enableVertexAttribArray(uvAttributeLocation);
 
+    //gl.bindBuffer(gl.ARRAY_BUFFER, null);
+
+    //create index buffer
+    model.iBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, model.iBuffer);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(data.indices), gl.STATIC_DRAW);
+    //gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+
+    modelMap.set(name, model);
+
     if (waitResourceObjects.has(name)) {
         waitResourceObjects.get(name).model = model;
         waitResourceObjects.delete(name);
     }
+}
+
+function ResetVertexAttribPooint() {
+    const positionAttributeLocation = gl.getAttribLocation(shaderProgram, 'aPosition');
+    const normalAttributeLocation = gl.getAttribLocation(shaderProgram, 'aNormal');
+    const uvAttributeLocation = gl.getAttribLocation(shaderProgram, 'aUv');
+
+    let vertexSize = 8 * Float32Array.BYTES_PER_ELEMENT;
+    gl.vertexAttribPointer(positionAttributeLocation, 3, gl.FLOAT, false, vertexSize, 0);
+    gl.enableVertexAttribArray(positionAttributeLocation);
+    gl.vertexAttribPointer(normalAttributeLocation, 3, gl.FLOAT, false, vertexSize, 3 * Float32Array.BYTES_PER_ELEMENT);
+    gl.enableVertexAttribArray(normalAttributeLocation);
+    gl.vertexAttribPointer(uvAttributeLocation, 2, gl.FLOAT, false, vertexSize, 6 * Float32Array.BYTES_PER_ELEMENT);
+    gl.enableVertexAttribArray(uvAttributeLocation);
 }
 
 //position, rotation, scale are int arrays, 
@@ -336,7 +350,6 @@ function testRoot(deltaTime) {
 
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-
     objects.forEach(function (object, index) {
         if (object.model == null) {
             return;
@@ -348,6 +361,9 @@ function testRoot(deltaTime) {
         let newWorldMatrix = getWorldMatrix(object.position, object.rotation, object.scale);
         gl.uniformMatrix4fv(object.uWorldMatrixLocation, false, newWorldMatrix);
 
+        gl.bindBuffer(gl.ARRAY_BUFFER, object.model.vBuffer)
+        ResetVertexAttribPooint();
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, object.model.iBuffer);
         gl.bindTexture(gl.TEXTURE_2D, object.texture);
         gl.activeTexture(gl.TEXTURE0); // 激活纹理单元 0
         gl.uniform1i(gl.getUniformLocation(shaderProgram, 'uSampler'), 0);
