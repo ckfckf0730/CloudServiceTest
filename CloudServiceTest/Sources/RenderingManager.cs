@@ -107,28 +107,27 @@ namespace CloudServiceTest
 			var json = File.ReadAllText(fullPath);
 
 			var objects = JsonConvert.DeserializeObject<Object3D[]>(json);
-			//foreach(var obj in objects)
-			//{
-			//	obj.texture = "texture_cat.jpg";
-			//	var modelName = obj.model.ToLower();
-			//	modelName = "model_" + modelName + ".jm";
-			//	obj.model = modelName;
+			foreach (var obj in objects)
+			{
+				obj.texture = "texture_cat.jpg";
+				var modelName = obj.model.ToLower();
+				modelName = "model_" + modelName + ".jm";
+				obj.model = modelName;
 
-			//	json = JsonConvert.SerializeObject(obj);
+				json = JsonConvert.SerializeObject(obj);
 
-			//	await SendMessageToConnectionId(connectionId, "CreateObject3D", json);
-			//	//return;
-			//}
+				await SendMessageToConnectionId(connectionId, "CreateObject3D", json);
+			}
 
 
-			var object3D = new Object3D();
-			object3D.name = "Test";
-			object3D.model = "model_quad.jm";
-			object3D.texture = "texture_cat.jpg";
+			//var object3D = new Object3D();
+			//object3D.name = "Test";
+			//object3D.model = "model_quad.jm";
+			//object3D.texture = "texture_cat.jpg";
 
-			json = JsonConvert.SerializeObject(object3D);
+			//json = JsonConvert.SerializeObject(object3D);
 
-			await SendMessageToConnectionId(connectionId, "CreateObject3D", json);
+			//await SendMessageToConnectionId(connectionId, "CreateObject3D", json);
 		}
 
 		public async Task InitAdditionalResources(string connectionId, string? userName)

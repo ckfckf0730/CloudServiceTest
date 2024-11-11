@@ -30,6 +30,7 @@ class Object3D {
 
 var camera = {} ;
 camera.position = [0, 3, -4];
+camera.rotation = [0.6, 0, 0];
 camera.lookAt = [0, 0, 0];
 camera.up = [0, 1, 0];
 
@@ -311,13 +312,14 @@ function getWorldMatrix(position, rotation, scale) {
     const worldMat = mat4.create();
 
     const positionRight = leftToRight(position);
-    const rotationRight = leftToRight(rotation);
+    let rotationRight = leftToRight(rotation);
+    rotationRight = float3Reflect(rotationRight);
 
     mat4.translate(worldMat, worldMat, positionRight);
 
-    mat4.rotateZ(worldMat, worldMat, rotationRight[2]);
-    mat4.rotateX(worldMat, worldMat, rotationRight[0]);
     mat4.rotateY(worldMat, worldMat, rotationRight[1]);
+    mat4.rotateX(worldMat, worldMat, rotationRight[0]);
+    mat4.rotateZ(worldMat, worldMat, rotationRight[2]);
 
     mat4.scale(worldMat, worldMat, scale);
 
@@ -327,11 +329,44 @@ function getWorldMatrix(position, rotation, scale) {
 function getViewMatrix(camera) {
     const viewMatrix = mat4.create();
     const position = leftToRight(camera.position);
-    const lookAt = leftToRight(camera.lookAt);
+    const rotationMat = mat4.create();
+
+    let rotationRight = leftToRight(camera.rotation);
+    rotationRight = float3Reflect(rotationRight);
+
+    mat4.rotateY(rotationMat, rotationMat, rotationRight[1]);
+    mat4.rotateX(rotationMat, rotationMat, rotationRight[0]);
+    mat4.rotateZ(rotationMat, rotationMat, rotationRight[2]);
+
+    const lookAt = [0, 0, -1];
+    const result = vec3.create();
+    vec3.transformMat4(result, lookAt, rotationMat);
+    vec3.add(result, result, position);
+
     const up = leftToRight(camera.up);
-    mat4.lookAt(viewMatrix, position, lookAt, up);
+    mat4.lookAt(viewMatrix, position, result, up);
 
     return viewMatrix;
+}
+
+function cameraMove(camera, offset) {
+    const rotationMat = mat4.create();
+
+    let rotationRight = leftToRight(camera.rotation);
+    rotationRight = float3Reflect(rotationRight);
+
+    mat4.rotateY(rotationMat, rotationMat, rotationRight[1]);
+    mat4.rotateX(rotationMat, rotationMat, rotationRight[0]);
+    mat4.rotateZ(rotationMat, rotationMat, rotationRight[2]);
+
+    const result = vec3.create();
+
+    const offsetRight = [offset[0], offset[1], -offset[2]]
+    vec3.transformMat4(result, offsetRight, rotationMat);
+
+    camera.position[0] += result[0];
+    camera.position[1] += result[1];
+    camera.position[2] += -result[2];
 }
 
 function getProjectionMatrix() {
@@ -345,7 +380,13 @@ function leftToRight(vector3) {
     return [vector3[0], vector3[1], -vector3[2]];
 }
 
+function float3Reflect(vector3) {
+    return [-vector3[0], -vector3[1], -vector3[2]];
+}
+
 function testRoot(deltaTime) {
+    UpdateCamera();
+
     gl.clearColor(1.0, 1.0, 0.0, 1.0);
 
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -355,8 +396,8 @@ function testRoot(deltaTime) {
             return;
         }
 
-        var rotation = deltaTime * 0.001;
-        object.rotation[1] += rotation;
+        //var rotation = deltaTime * 0.001;
+        //object.rotation[1] += rotation;
 
         let newWorldMatrix = getWorldMatrix(object.position, object.rotation, object.scale);
         gl.uniformMatrix4fv(object.uWorldMatrixLocation, false, newWorldMatrix);
@@ -380,8 +421,63 @@ function testRoot(deltaTime) {
     
 }
 
+function UpdateCamera() {
+    const viewMatrix = getViewMatrix(camera);
+    const uViewMatrixLocation = gl.getUniformLocation(shaderProgram, "uViewMatrix");
+    gl.uniformMatrix4fv(uViewMatrixLocation, false, viewMatrix);
+}
+
 function render() {
 
 
 
 }
+
+
+window.addEventListener('keydown', (event) => {
+    const moveSpeed = 0.1;
+
+    if (event.code === 'KeyW') {
+        const moveVec =  [0, 0, moveSpeed]; 
+        cameraMove(camera, moveVec);
+        
+    } else if (event.code === 'KeyS') {
+        const moveVec =  [0, 0, -moveSpeed]; 
+        cameraMove(camera, moveVec);
+    } else if (event.code === 'KeyA') {
+        const moveVec =  [-moveSpeed, 0, 0]; 
+        cameraMove(camera, moveVec);
+    } else if (event.code === 'KeyD') {
+        const moveVec =  [moveSpeed, 0, 0]; 
+        cameraMove(camera, moveVec);
+    }
+});
+
+let lastX = 0, lastY = 0;
+let isMouseDown = false;
+let rotationSpeed = 0.001;
+
+window.addEventListener('mousedown', (event) => {
+    isMouseDown = true;
+    lastX = event.clientX;
+    lastY = event.clientY;
+});
+
+window.addEventListener('mouseup', () => {
+    isMouseDown = false;
+});
+
+window.addEventListener('mousemove', (event) => {
+    if (isMouseDown) {
+        let deltaX = event.clientX - lastX;
+        let deltaY = event.clientY - lastY;
+
+
+        camera.rotation[1] += deltaX * rotationSpeed;
+        camera.rotation[0] += deltaY * rotationSpeed;
+
+
+        lastX = event.clientX;
+        lastY = event.clientY;
+    }
+});
