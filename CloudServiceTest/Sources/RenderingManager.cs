@@ -132,6 +132,8 @@ namespace CloudServiceTest
 
 		public async Task InitAdditionalResources(string connectionId, string? userName)
 		{
+			return;
+
 			var list = _databaseService.LoadFileRecord(userName);
 			int xOff = -5;
 

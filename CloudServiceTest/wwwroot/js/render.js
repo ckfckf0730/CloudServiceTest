@@ -88,7 +88,10 @@ function initTexture(name, image) {
     textureMap.set(name, texture);
 
     if (waitResourceObjects.has(name)) {
-        waitResourceObjects.get(name).texture = texture;
+        waitResourceObjects.get(name).forEach(function(object, index){
+            object.texture = texture;
+        });
+
         waitResourceObjects.delete(name);
     }
 }
@@ -115,7 +118,16 @@ function createObject3D(objectData) {
     else {
         console.log("Model " + objectData.model + " not exist.");
         requestResource("CreateModel", objectData.model);
-        waitResourceObjects.set(objectData.model, object);
+        if (waitResourceObjects.has(objectData.model)) {
+            waitResourceObjects.get(objectData.model).push(object);
+        }
+        else {
+            const waitObjs = [];
+            waitObjs.push(object);
+            waitResourceObjects.set(objectData.model, waitObjs);
+        }
+
+        
     }
 
     if (textureMap.has(objectData.texture)) {
@@ -124,7 +136,14 @@ function createObject3D(objectData) {
     else {
         console.log("Texture " + objectData.texture + " not exist.");
         requestResource("CreateTexture", objectData.texture);
-        waitResourceObjects.set(objectData.texture, object);
+        if (waitResourceObjects.has(objectData.texture)) {
+            waitResourceObjects.get(objectData.texture).push(object);
+        }
+        else {
+            const waitObjs = [];
+            waitObjs.push(object);
+            waitResourceObjects.set(objectData.texture, waitObjs);
+        }
     }
 
     objects.push(object);
@@ -288,7 +307,10 @@ function createVertexBuffer(name, data) {
     modelMap.set(name, model);
 
     if (waitResourceObjects.has(name)) {
-        waitResourceObjects.get(name).model = model;
+        waitResourceObjects.get(name).forEach(function (object, index) {
+            object.model = model;
+        });
+
         waitResourceObjects.delete(name);
     }
 }

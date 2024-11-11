@@ -360,11 +360,13 @@ function cameraMove(camera, offset) {
     mat4.rotateZ(rotationMat, rotationMat, rotationRight[2]);
 
     const result = vec3.create();
-    vec3.transformMat4(result, offset, rotationMat);
 
-    camera.position[0] = result[0];
-    camera.position[1] = result[1];
-    camera.position[2] = -result[2];
+    const offsetRight = [offset[0], offset[1], -offset[2]]
+    vec3.transformMat4(result, offsetRight, rotationMat);
+
+    camera.position[0] += result[0];
+    camera.position[1] += result[1];
+    camera.position[2] += -result[2];
 }
 
 function getProjectionMatrix() {
@@ -436,17 +438,17 @@ window.addEventListener('keydown', (event) => {
     const moveSpeed = 0.1;
 
     if (event.code === 'KeyW') {
-        const moveVec = new [0, 0, moveSpeed]; 
+        const moveVec =  [0, 0, moveSpeed]; 
         cameraMove(camera, moveVec);
         
     } else if (event.code === 'KeyS') {
-        const moveVec = new [0, 0, -moveSpeed]; 
+        const moveVec =  [0, 0, -moveSpeed]; 
         cameraMove(camera, moveVec);
     } else if (event.code === 'KeyA') {
-        const moveVec = new [moveSpeed, 0, 0]; 
+        const moveVec =  [-moveSpeed, 0, 0]; 
         cameraMove(camera, moveVec);
     } else if (event.code === 'KeyD') {
-        const moveVec = new [-moveSpeed, 0, 0]; 
+        const moveVec =  [moveSpeed, 0, 0]; 
         cameraMove(camera, moveVec);
     }
 });
