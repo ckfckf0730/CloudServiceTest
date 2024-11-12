@@ -11,6 +11,10 @@ var waitResourceObjects = new Map();
 var objects = [];
 //var testIndex = 0;
 
+var frameObjects = [];
+var curFrameIndex = 0
+
+
 var requestResource = null;
 
 class Object3D {
@@ -18,7 +22,9 @@ class Object3D {
         this.position = [0, 0, 0];
         this.rotation = [0, 0, 0];
         this.scale = [1, 1, 1];
+        this.color = [1, 1, 1, 1];
         this.uWorldMatrixLocation = gl.getUniformLocation(shaderProgram, "uWorldMatrix");
+        this.uColorLocation = gl.getUniformLocation(shaderProgram, "uColor");
 
         this.name = null;
         this.model = null;
@@ -28,7 +34,7 @@ class Object3D {
 
 }
 
-var camera = {} ;
+var camera = {};
 camera.position = [0, 3, -4];
 camera.rotation = [0.6, 0, 0];
 camera.lookAt = [0, 0, 0];
@@ -49,16 +55,16 @@ gl.cullFace(gl.BACK);
 
 gl.frontFace(gl.CW);
 
-gl.disable(gl.BLEND);  
+gl.disable(gl.BLEND);
 
-gl.enable(gl.DEPTH_TEST); 
+gl.enable(gl.DEPTH_TEST);
 gl.depthFunc(gl.LESS);
 
 
-function createTexture(name,picture) {
+function createTexture(name, picture) {
     const image = new Image();
     image.src = picture;
-    image.onload = function() {
+    image.onload = function () {
         initTexture(name, image);
     };
 }
@@ -88,7 +94,7 @@ function initTexture(name, image) {
     textureMap.set(name, texture);
 
     if (waitResourceObjects.has(name)) {
-        waitResourceObjects.get(name).forEach(function(object, index){
+        waitResourceObjects.get(name).forEach(function (object, index) {
             object.texture = texture;
         });
 
@@ -110,6 +116,17 @@ function createObject3D(objectData) {
     object.scale[1] = objectData.scale.Y;
     object.scale[2] = objectData.scale.Z;
 
+    object.color[0] = objectData.color.X;
+    object.color[1] = objectData.color.Y;
+    object.color[2] = objectData.color.Z;
+    object.color[3] = objectData.color.W;
+
+    if (objectData.remark == "Frame") {
+        object.color = [1, 1, 1, 1];
+        objectData.texture = "frame_" + frameObjects.length;
+        frameObjects.push(object);
+    }
+
     object.name = objectData.name;
 
     if (modelMap.has(objectData.model)) {
@@ -127,7 +144,7 @@ function createObject3D(objectData) {
             waitResourceObjects.set(objectData.model, waitObjs);
         }
 
-        
+
     }
 
     if (textureMap.has(objectData.texture)) {
@@ -150,6 +167,8 @@ function createObject3D(objectData) {
 
     let worldMatrix = getWorldMatrix(object.position, object.rotation, object.scale);
     gl.uniformMatrix4fv(object.uWorldMatrixLocation, false, worldMatrix);
+
+    gl.uniform4fv(object.uColorLocation, object.color);
 }
 
 async function loadShaderFile(url) {
@@ -166,7 +185,7 @@ async function loadShaderFile(url) {
 }
 
 function loadShader(gl, type, source) {
-    const shader = gl.createShader(type); 
+    const shader = gl.createShader(type);
     gl.shaderSource(shader, source);
     gl.compileShader(shader);
 
@@ -187,7 +206,7 @@ function createShaderProgram(gl, vsSource, fsSource) {
     const shaderProgram = gl.createProgram();
     gl.attachShader(shaderProgram, vertexShader);
     gl.attachShader(shaderProgram, fragmentShader);
-    gl.linkProgram(shaderProgram);  
+    gl.linkProgram(shaderProgram);
 
     if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
         console.error(`Unable to initialize the shader program: ${gl.getProgramInfoLog(shaderProgram)}`);
@@ -236,7 +255,7 @@ async function initWebGL() {
     gl.uniform3fv(uEyeLocation, eye);
 }
 
-function createVertexBuffer(name, data) {     
+function createVertexBuffer(name, data) {
 
     let vers = [];
     data.vertices.forEach(function (vertex, index) {
@@ -424,6 +443,8 @@ function testRoot(deltaTime) {
         let newWorldMatrix = getWorldMatrix(object.position, object.rotation, object.scale);
         gl.uniformMatrix4fv(object.uWorldMatrixLocation, false, newWorldMatrix);
 
+        gl.uniform4fv(object.uColorLocation, object.color);
+
         gl.bindBuffer(gl.ARRAY_BUFFER, object.model.vBuffer)
         ResetVertexAttribPooint();
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, object.model.iBuffer);
@@ -440,13 +461,17 @@ function testRoot(deltaTime) {
         );
     });
 
-    
+
 }
 
 function UpdateCamera() {
     const viewMatrix = getViewMatrix(camera);
     const uViewMatrixLocation = gl.getUniformLocation(shaderProgram, "uViewMatrix");
     gl.uniformMatrix4fv(uViewMatrixLocation, false, viewMatrix);
+
+    const eye = leftToRight(camera.position);
+    const uEyeLocation = gl.getUniformLocation(shaderProgram, "uEye");
+    gl.uniform3fv(uEyeLocation, eye);
 }
 
 function render() {
@@ -460,17 +485,17 @@ window.addEventListener('keydown', (event) => {
     const moveSpeed = 0.1;
 
     if (event.code === 'KeyW') {
-        const moveVec =  [0, 0, moveSpeed]; 
+        const moveVec = [0, 0, moveSpeed];
         cameraMove(camera, moveVec);
-        
+
     } else if (event.code === 'KeyS') {
-        const moveVec =  [0, 0, -moveSpeed]; 
+        const moveVec = [0, 0, -moveSpeed];
         cameraMove(camera, moveVec);
     } else if (event.code === 'KeyA') {
-        const moveVec =  [-moveSpeed, 0, 0]; 
+        const moveVec = [-moveSpeed, 0, 0];
         cameraMove(camera, moveVec);
     } else if (event.code === 'KeyD') {
-        const moveVec =  [moveSpeed, 0, 0]; 
+        const moveVec = [moveSpeed, 0, 0];
         cameraMove(camera, moveVec);
     }
 });
@@ -503,3 +528,13 @@ window.addEventListener('mousemove', (event) => {
         lastY = event.clientY;
     }
 });
+
+
+function showAzurePicture(texture) {
+    if (curFrameIndex < frameObjects.length) {
+        let name = "frame_" + curFrameIndex;
+        createTexture(name, texture);
+        curFrameIndex++;
+    }
+
+}

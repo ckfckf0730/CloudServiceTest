@@ -109,7 +109,11 @@ namespace CloudServiceTest
 			var objects = JsonConvert.DeserializeObject<Object3D[]>(json);
 			foreach (var obj in objects)
 			{
-				obj.texture = "texture_cat.jpg";
+				if (string.IsNullOrEmpty(obj.texture))
+				{
+					obj.texture = "texture_white.jpg";
+				}
+
 				var modelName = obj.model.ToLower();
 				modelName = "model_" + modelName + ".jm";
 				obj.model = modelName;
@@ -132,8 +136,6 @@ namespace CloudServiceTest
 
 		public async Task InitAdditionalResources(string connectionId, string? userName)
 		{
-			return;
-
 			var list = _databaseService.LoadFileRecord(userName);
 			int xOff = -5;
 
@@ -161,16 +163,9 @@ namespace CloudServiceTest
 
 					_resourceMapping.TryAdd(fileName, fileData);
 
-					var object3D = new Object3D();
-					object3D.position = new Vector3(xOff, -3, 6);
-					xOff += 2;
-					object3D.name = fileName;
-					object3D.model = "model_cube.jm";
-					object3D.texture = fileName;
+					var json = JsonConvert.SerializeObject(fileData);
 
-					var json = JsonConvert.SerializeObject(object3D);
-
-					await SendMessageToConnectionId(connectionId, "CreateObject3D", json);
+					await SendMessageToConnectionId(connectionId, "ShowAzurePicture", json);
 
 				}
 			}
@@ -267,6 +262,10 @@ namespace CloudServiceTest
 				isTexture = true;
 			}
 			var respData = GetResource(message, isTexture);
+			if(respData == null)
+			{
+				return;
+			}
 
 			var data = new
 			{
@@ -299,15 +298,18 @@ namespace CloudServiceTest
 			public Vector3 position;
 			public Vector3 rotation;
 			public Vector3 scale;
+			public Vector4 color;
 
 			public string model;
 			public string texture;
+			public string remark;
 
 			public Object3D()
 			{
 				position = Vector3.Zero;
 				rotation = Vector3.Zero;
 				scale = Vector3.One;
+				color = Vector4.One;
 			}
 		}
 	}

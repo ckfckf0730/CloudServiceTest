@@ -15,6 +15,7 @@ varying vec2 vUv;
 void main() {
     vWorldPos = uWorldMatrix  * vec4(aPosition, 1);
     vWorldNormal = (uWorldMatrix  * vec4(aNormal, 0)).xyz;
+    vWorldNormal = normalize(vWorldNormal);
 
     gl_Position = uProjectionMatrix * uViewMatrix * vWorldPos;
     vUv = aUv;

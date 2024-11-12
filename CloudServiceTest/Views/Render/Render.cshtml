@@ -38,6 +38,12 @@
 		createObject3D(data);
 	});
 
+	renderingConnection.on("ShowAzurePicture", function (message) {
+		const data = JSON.parse(message);
+
+		showAzurePicture(data);
+	});
+
 	function requireResource(msgType, message) {
 		renderingConnection.invoke("RequireResource", renderingConnection.connectionId, msgType, message).
 		catch(function (err) {
