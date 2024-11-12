@@ -122,8 +122,9 @@ function createObject3D(objectData) {
     object.color[3] = objectData.color.W;
 
     if (objectData.remark == "Frame") {
-        frameObjects.push(object);
+        object.color = [1, 1, 1, 1];
         objectData.texture = "frame_" + frameObjects.length;
+        frameObjects.push(object);
     }
 
     object.name = objectData.name;
@@ -533,6 +534,7 @@ function showAzurePicture(texture) {
     if (curFrameIndex < frameObjects.length) {
         let name = "frame_" + curFrameIndex;
         createTexture(name, texture);
+        curFrameIndex++;
     }
 
 }
