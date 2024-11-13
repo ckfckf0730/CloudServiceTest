@@ -13,6 +13,7 @@ builder.Services.AddSignalR();
 builder.Services.AddSingleton<CloudServiceTest.FileStorageService>();
 builder.Services.AddSingleton<CloudServiceTest.ImageAnalysisService>();
 builder.Services.AddSingleton<CloudServiceTest.ImageService>();
+builder.Services.AddSingleton<CloudServiceTest.VideoService>();
 builder.Services.AddSingleton<CloudServiceTest.BingSearchService>();
 builder.Services.AddScoped<CloudServiceTest.DatabaseService>();
 builder.Services.Configure<CloudServiceTest.SmtpSettings>(builder.Configuration.GetSection("Smtp"));

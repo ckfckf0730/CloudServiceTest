@@ -16,5 +16,7 @@ namespace CloudServiceTest.Data
         public DbSet<FileRecord> FileRecords { get; set; }
 		public DbSet<NewsRecord> NewsRecords { get; set; }
 		public DbSet<MessageRecord> MessageRecords { get; set; }
+
+		public DbSet<VideoRecord> VideoRecords { get; set; }
 	}
 }

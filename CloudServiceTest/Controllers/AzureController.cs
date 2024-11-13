@@ -252,7 +252,7 @@ public class AzureController : Controller
             }
             catch (Exception ex)
             {
-                transaction.RollbackAsync();
+				await transaction.RollbackAsync();
                 return Json(new { success = false, message = "File uploaded faultily:" + ex.Message });
             }
 
@@ -260,12 +260,12 @@ public class AzureController : Controller
             if (isSuccess)
             {
                 transaction.Commit();
-                UploadThumbnail(file, newFile.ThumbnailId.ToString());
+				await UploadThumbnail(file, newFile.ThumbnailId.ToString());
                 return Json(new { success = true, message = "File uploaded successfully." });
             }
             else
             {
-                transaction.RollbackAsync();
+				await transaction.RollbackAsync();
                 return Json(new { success = false, message = "File upload failed." });
             }
         }

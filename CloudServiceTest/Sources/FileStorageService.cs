@@ -39,7 +39,30 @@ namespace CloudServiceTest
             );
         }
 
-        public async Task<Stream?> DownloadFileAsync(string shareName, string filePath)
+		public async Task<Response<ShareFileUploadInfo>> UploadFileChunkAsync(string shareName, string fileName,int chunkId , byte[] buffer)
+		{
+			ShareClient shareClient = new ShareClient(_connectionString, shareName);
+
+			await shareClient.CreateIfNotExistsAsync();
+
+			ShareDirectoryClient rootDirectory = shareClient.GetRootDirectoryClient();
+
+            if (chunkId > 0)
+            {
+				fileName = fileName +"_" + chunkId.ToString();
+
+			}
+			ShareFileClient fileClient = rootDirectory.GetFileClient(fileName);
+
+            var fileStream = new MemoryStream(buffer);
+			await fileClient.CreateAsync(fileStream.Length);
+			return await fileClient.UploadRangeAsync(
+				new Azure.HttpRange(0, fileStream.Length),
+				fileStream
+			);
+		}
+
+		public async Task<Stream?> DownloadFileAsync(string shareName, string filePath)
         {
             ShareClient shareClient = new ShareClient(_connectionString, shareName);
             await shareClient.CreateIfNotExistsAsync();
