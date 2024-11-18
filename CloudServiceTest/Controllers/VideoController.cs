@@ -3,6 +3,7 @@ using CloudServiceTest.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.IO;
+using CloudServiceTest.Models.Video;
 
 namespace CloudServiceTest.Controllers
 {
@@ -23,9 +24,32 @@ namespace CloudServiceTest.Controllers
 
 		}
 
-		public IActionResult Video()
+		public async Task<IActionResult> Video()
 		{
-			return View();
+			var records = await _databaseService.Context.VideoRecords.
+				OrderByDescending(r => r.UploadDate).Take(10).ToListAsync();
+
+			VideoViewModel model = new VideoViewModel();
+			model.videos = new List<VideoInfo>();
+			foreach(var record in records)
+			{
+				model.videos.Add(new VideoInfo()
+				{
+					videoID = record.Id.ToString(),
+					videoName = record.FileName,
+					videoType = record.VideoType
+				});
+			}
+			return View(model);
+		}
+
+		public IActionResult VideoStreaming(string guid, string name, string type)
+		{
+			VideoInfo videoInfo = new VideoInfo();
+			videoInfo.videoName = name;
+			videoInfo.videoType = type;
+			videoInfo.videoURL = _fileStorageService.GetStreamingVideoURL(_videoShareFolder, guid);
+			return View("VideoStreaming", videoInfo);
 		}
 
 
@@ -57,6 +81,7 @@ namespace CloudServiceTest.Controllers
 				Tag = "",
 				State = "Pending",
 				ChunkCount = 1,
+				VideoType = file.ContentType.ToLower()
 			};
 			var dbContext = _databaseService.Context;
 
@@ -71,34 +96,10 @@ namespace CloudServiceTest.Controllers
 				{
 					if (saveResult == 1)
 					{
-						long chunkSize = 4 * 1024 * 1024; // 4MB per chunk
-						long fileLength = stream.Length;
-						long chunkCount = (fileLength + chunkSize - 1) / chunkSize;
-						newFile.ChunkCount = (int)chunkCount;
-
-						stream.Position = 0;
-						isSuccess = true;
-						for (int i = 0; i < chunkCount; i++)
-						{
-							long offset = i * chunkSize;
-							long remainingBytes = fileLength - offset;
-							int currentChunkSize = (int)Math.Min(chunkSize, remainingBytes);  
-
-							byte[] buffer = new byte[currentChunkSize];
-							stream.Seek(offset, SeekOrigin.Begin);  
-							await stream.ReadAsync(buffer, 0, currentChunkSize);
-
-							var updateName = newFile.Id.ToString();
-							var result = await _fileStorageService.UploadFileChunkAsync(_videoShareFolder, updateName,i, buffer);
-							var str = result.GetRawResponse();
-							if(str.IsError)
-							{
-								isSuccess = false;
-								ErrorMsg = str.ReasonPhrase;
-								break;
-							}
-						}
+						var updateName = newFile.Id.ToString();
+						isSuccess = await _fileStorageService.UploadFileAsBlobAsync(_videoShareFolder, updateName, stream);
 					}
+
 				}
 			}
 			catch (Exception ex)

@@ -1,0 +1,10 @@
+﻿@model CloudServiceTest.Models.Video.VideoInfo
+
+<h2>Streaming Video Playing</h2>
+
+<video width="600" controls>
+	<source src="@Model.videoURL" type="@Model.videoType">
+</video>
+
+<p>"@Model.videoURL"</p>
+<p>"@Model.videoType"</p>

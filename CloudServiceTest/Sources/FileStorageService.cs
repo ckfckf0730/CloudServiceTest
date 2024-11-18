@@ -1,8 +1,12 @@
 ﻿using Azure;
 using Azure.Storage.Files.Shares;
 using Azure.Storage.Files.Shares.Models;
+using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Specialized;
+using Azure.Storage.Blobs.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Azure.Storage.Sas;
 
 namespace CloudServiceTest
 {
@@ -11,7 +15,7 @@ namespace CloudServiceTest
         private readonly IConfiguration _configuration;
         private string _connectionString;
 
-        public FileStorageService(IConfiguration configuration)
+		public FileStorageService(IConfiguration configuration)
         {
             _configuration = configuration;
             _connectionString = _configuration["AzureStorage:ConnectionString"];
@@ -105,5 +109,56 @@ namespace CloudServiceTest
                 return true;
             }
         }
-    }
+
+		public async Task<bool> UploadFileAsBlobAsync(string containerName, string blobName, Stream fileStream)
+		{
+			var blobServiceClient = new BlobServiceClient(_connectionString);
+			var containerClient = blobServiceClient.GetBlobContainerClient(containerName);
+			await containerClient.CreateIfNotExistsAsync();
+    
+            var blockBlobClient = containerClient.GetBlockBlobClient(blobName);
+
+			long fileLength = fileStream.Length;
+
+			const int blockSize = 4 * 1024 * 1024; // 4MB
+			var blockList = new List<string>(); 
+
+			byte[] buffer = new byte[blockSize];
+			int bytesRead;
+			int blockIdCounter = 0;
+
+			while ((bytesRead = await fileStream.ReadAsync(buffer, 0, blockSize)) > 0)
+			{
+				// 生成一个基于块的唯一标识符（必须是 base64 编码）
+				string blockId = Convert.ToBase64String(BitConverter.GetBytes(blockIdCounter));
+
+				// 将块上传到 Blob 存储
+				using (var stream = new MemoryStream(buffer, 0, bytesRead))
+				{
+					await blockBlobClient.StageBlockAsync(blockId, stream);
+				}
+
+				blockList.Add(blockId);
+				blockIdCounter++;
+			}
+
+			// 合并所有块
+			await blockBlobClient.CommitBlockListAsync(blockList);
+
+			Console.WriteLine($"File uploaded and merged successfully: {blobName}");
+            return true;
+		}
+
+        public string? GetStreamingVideoURL(string containerName, string blobName)
+        {
+			var blobServiceClient = new BlobServiceClient(_connectionString);
+			var containerClient = blobServiceClient.GetBlobContainerClient(containerName);
+			var blobClient = containerClient.GetBlobClient(blobName);
+
+			var sasUri = blobClient.GenerateSasUri(BlobSasPermissions.Read, DateTimeOffset.UtcNow.AddHours(1));
+
+			return sasUri?.ToString();
+		}
+
+	}
 }

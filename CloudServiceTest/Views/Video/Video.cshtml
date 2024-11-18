@@ -1,5 +1,23 @@
-﻿
+﻿@model CloudServiceTest.Models.Video.VideoViewModel
+
 <h2>Welcome to Streaming Video Page</h2>
+
+<ul>
+	@foreach (var video in Model.videos)
+	{
+		<li>
+			<form action="@Url.Action("VideoStreaming", "Video")" method="post">
+				<input type="hidden" name="guid" value="@video.videoID" />
+				<input type="hidden" name="name" value="@video.videoName" />
+				<input type="hidden" name="type" value="@video.videoType" />
+				<button type="submit">@video.videoName</button>
+			</form>
+
+		</li>
+	}
+
+</ul>
+
 
 
 <form id="uploadForm" asp-controller="Video" asp-action="UploadFile" method="post" enctype="multipart/form-data">
