@@ -134,7 +134,7 @@ UnityのSceneデータによって、同じ現場が作られます。<br>
 まずAzureのshare folderが一つのファイル4M以下しかアップロードできません。<br>
 大きい動画ファイルをいくつ分割、share folderに送るのはできるが、<br>
 AzureのBlob機能を使うと、この部分はもっと簡単です。<br>
-最後Azureにアップロードした動画のSasUriを求めて、Htmlの<video>コンポーネント直接放送できます。
+最後Azureにアップロードした動画のSasUriを求めて、Htmlのvideoコンポーネント直接放送できます。
 ![describe1](https://github.com/ckfckf0730/CloudServiceTest/blob/main/readme/VideoStreaming.gif)<br>
 <br>
 <br>
