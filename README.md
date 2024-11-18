@@ -117,13 +117,24 @@ DirectX 12と比べると、WebGLは初期化が大幅に簡略化されてい�
 ***
 WebGlに基く3Dレンダリングモジュールを使って、簡単な機能実現：<br>
 <br>
-Unityエンジンで、静的なSceneを構築、そのGameObjectのJsonデータ記録して、本プロジェクトに使用します。
+Unityエンジンで、静的なSceneを構築、そのGameObjectのJsonデータ記録して、本プロジェクトに使用します。<br>
 ![describe1](https://github.com/ckfckf0730/CloudServiceTest/blob/main/readme/UnityScene.png)<br>
-
-本プロジェクトが同じ大きさ、同じデフォルト方向のCube、Quadモデルを準備しています。
-UnityのSceneデータによって、同じ現場が作られます。
-さらに、UnityのGold Meterialを使ったGameObjectが、remarkの説明を記録して、本プロジェクトでこのモデルがサーバーからのAzure画像展示します。
+<br>
+本プロジェクトが同じ大きさ、同じデフォルト方向のCube、Quadモデルを準備しています。<br>
+UnityのSceneデータによって、同じ現場が作られます。<br>
+さらに、UnityのGold Meterialを使ったGameObjectが、remarkの説明を記録して、本プロジェクトでこのモデルがサーバーからのAzure画像展示します。<br>
 ![describe1](https://github.com/ckfckf0730/CloudServiceTest/blob/main/readme/Rendering02.gif)<br>
 <br>
+<br>
+***
+オンライン動画ストリーミングの実現：<br>
+<br>
+前は画像のAzure保存と閲覧を作りましたが、今回その機能について、動画のAzure保存と放送を実現します。<br>
+<br>
+まずAzureのshare folderが一つのファイル4M以下しかアップロードできません。<br>
+大きい動画ファイルをいくつ分割、share folderに送るのはできるが、<br>
+AzureのBlob機能を使うと、この部分はもっと簡単です。<br>
+最後Azureにアップロードした動画のSasUriを求めて、Htmlの<video>コンポーネント直接放送できます。
+![describe1](https://github.com/ckfckf0730/CloudServiceTest/blob/main/readme/VideoStreaming.gif)<br>
 <br>
 <br>
