@@ -2,24 +2,6 @@
 
 <h2>Welcome to Streaming Video Page</h2>
 
-<ul>
-	@foreach (var video in Model.videos)
-	{
-		<li>
-			<form action="@Url.Action("VideoStreaming", "Video")" method="post">
-				<input type="hidden" name="guid" value="@video.videoID" />
-				<input type="hidden" name="name" value="@video.videoName" />
-				<input type="hidden" name="type" value="@video.videoType" />
-				<button type="submit">@video.videoName</button>
-			</form>
-
-		</li>
-	}
-
-</ul>
-
-
-
 <form id="uploadForm" asp-controller="Video" asp-action="UploadFile" method="post" enctype="multipart/form-data">
 	<div>
 		<label for="file">Choose a file:</label>
@@ -29,3 +11,27 @@
 		<button type="submit">Upload</button>
 	</div>
 </form>
+
+<div id="container">
+	@foreach (var video in Model.videos)
+	{
+		<div>
+			<form action="@Url.Action("VideoStreaming", "Video")" method="post">
+				<input type="hidden" name="guid" value="@video.videoID" />
+				<input type="hidden" name="name" value="@video.videoName" />
+				<input type="hidden" name="type" value="@video.videoType" />
+				<input type="submit" value="" 
+					   style="background-image: url('@video.tumbnailSrc'); max-width: 200px;
+                  width: 200px; height: 150px; border: 1px; cursor: pointer; background-size: 100% 100%;" />
+	@* 			<img type="submit" src="@video.tumbnailSrc" style.maxWidth='200px' img.style.margin='10px'>
+				<button type="submit"></button> *@
+			</form>
+			<p>"@video.videoName"</p>
+			<form action="@Url.Action("DeleteVideo", "Video")">
+				<input type="hidden" name="guid" value="@video.videoID" />
+				<button>Delete</button>
+			</form>
+
+		</div>
+	}
+</div>

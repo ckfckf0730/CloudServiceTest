@@ -14,5 +14,7 @@
         public string? State { get; set; }
 
         public int ChunkCount { get; set; }
+
+        public string? Thumbnail {  get; set; }
     }
 }

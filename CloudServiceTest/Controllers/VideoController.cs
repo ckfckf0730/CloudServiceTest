@@ -15,12 +15,22 @@ namespace CloudServiceTest.Controllers
 
 		private readonly string _videoShareFolder = "videofolders";
 
+		private static string s_defaultThumbnailSrc;
+
 		public VideoController(VideoService videoService,
-			DatabaseService databaseService, FileStorageService fileStorageService)
+			DatabaseService databaseService, FileStorageService fileStorageService, IWebHostEnvironment hostingEnvironment)
 		{
 			_videoService = videoService;
 			_databaseService = databaseService;
 			_fileStorageService = fileStorageService;
+
+			if(s_defaultThumbnailSrc == null)
+			{
+				var bytes = System.IO.File.ReadAllBytes(hostingEnvironment.WebRootPath + "/resource/texture_cantFindThum.png");
+				var base64String = Convert.ToBase64String(bytes);
+				string mimeType = "image/png";
+				s_defaultThumbnailSrc = $"data:{mimeType};base64,{base64String}";
+			}
 
 		}
 
@@ -33,14 +43,28 @@ namespace CloudServiceTest.Controllers
 			model.videos = new List<VideoInfo>();
 			foreach(var record in records)
 			{
+				string tumbSrc = null;
+				if(string.IsNullOrEmpty(record.Thumbnail))
+				{
+					tumbSrc = s_defaultThumbnailSrc;
+				}
+				else
+				{
+
+				}
+
 				model.videos.Add(new VideoInfo()
 				{
 					videoID = record.Id.ToString(),
 					videoName = record.FileName,
-					videoType = record.VideoType
+					videoType = record.VideoType,
+					tumbnailSrc = tumbSrc,
 				});
+
+
+
 			}
-			return View(model);
+			return View("Video",model);
 		}
 
 		public IActionResult VideoStreaming(string guid, string name, string type)
@@ -50,6 +74,21 @@ namespace CloudServiceTest.Controllers
 			videoInfo.videoType = type;
 			videoInfo.videoURL = _fileStorageService.GetStreamingVideoURL(_videoShareFolder, guid);
 			return View("VideoStreaming", videoInfo);
+		}
+
+		public async Task<IActionResult> DeleteVideo(string guid)
+		{
+			if(string.IsNullOrWhiteSpace(guid))
+			{
+				return NoContent();
+			}
+
+			if(await _fileStorageService.DeleteFileAsBlobAsync(_videoShareFolder, guid))
+			{
+				await _databaseService.Context.VideoRecords.Where(fr => fr.Id == Guid.Parse(guid)).ExecuteDeleteAsync();
+			}
+
+			return await Video();
 		}
 
 

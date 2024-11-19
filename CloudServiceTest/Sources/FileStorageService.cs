@@ -145,8 +145,36 @@ namespace CloudServiceTest
 			// 合并所有块
 			await blockBlobClient.CommitBlockListAsync(blockList);
 
-			Console.WriteLine($"File uploaded and merged successfully: {blobName}");
+			Console.WriteLine($"Blob File uploaded and merged successfully: {blobName}");
             return true;
+		}
+
+        public async Task<bool> DeleteFileAsBlobAsync(string containerName, string blobName)
+        {
+            try
+            {
+				var blobServiceClient = new BlobServiceClient(_connectionString);
+				var containerClient = blobServiceClient.GetBlobContainerClient(containerName);
+				await containerClient.CreateIfNotExistsAsync();
+
+				var blockBlobClient = containerClient.GetBlockBlobClient(blobName);
+
+				var result = await blockBlobClient.DeleteAsync();
+				if(result.IsError)
+                {
+					Console.WriteLine(result.Content);
+					return false;
+				}
+			}
+            catch (Exception ex) 
+            { 
+                Console.WriteLine(ex.Message);
+                return false;
+            }
+
+
+			Console.WriteLine($"Blob File deleted successfully: {blobName}");
+			return true;
 		}
 
         public string? GetStreamingVideoURL(string containerName, string blobName)

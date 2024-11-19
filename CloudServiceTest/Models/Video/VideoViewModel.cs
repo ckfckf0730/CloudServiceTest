@@ -19,5 +19,7 @@ namespace CloudServiceTest.Models.Video
         public string? videoType { get; set; }
 
         public string? videoURL { get; set; }
+
+        public string? tumbnailSrc {  get; set; }
     }
 }
