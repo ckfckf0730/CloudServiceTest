@@ -15,7 +15,7 @@ namespace CloudServiceTest
         private readonly IConfiguration _configuration;
         private string _connectionString;
 
-		public FileStorageService(IConfiguration configuration)
+        public FileStorageService(IConfiguration configuration)
         {
             _configuration = configuration;
             _connectionString = _configuration["AzureStorage:ConnectionString"];
@@ -43,30 +43,30 @@ namespace CloudServiceTest
             );
         }
 
-		public async Task<Response<ShareFileUploadInfo>> UploadFileChunkAsync(string shareName, string fileName,int chunkId , byte[] buffer)
-		{
-			ShareClient shareClient = new ShareClient(_connectionString, shareName);
+        public async Task<Response<ShareFileUploadInfo>> UploadFileChunkAsync(string shareName, string fileName, int chunkId, byte[] buffer)
+        {
+            ShareClient shareClient = new ShareClient(_connectionString, shareName);
 
-			await shareClient.CreateIfNotExistsAsync();
+            await shareClient.CreateIfNotExistsAsync();
 
-			ShareDirectoryClient rootDirectory = shareClient.GetRootDirectoryClient();
+            ShareDirectoryClient rootDirectory = shareClient.GetRootDirectoryClient();
 
             if (chunkId > 0)
             {
-				fileName = fileName +"_" + chunkId.ToString();
+                fileName = fileName + "_" + chunkId.ToString();
 
-			}
-			ShareFileClient fileClient = rootDirectory.GetFileClient(fileName);
+            }
+            ShareFileClient fileClient = rootDirectory.GetFileClient(fileName);
 
             var fileStream = new MemoryStream(buffer);
-			await fileClient.CreateAsync(fileStream.Length);
-			return await fileClient.UploadRangeAsync(
-				new Azure.HttpRange(0, fileStream.Length),
-				fileStream
-			);
-		}
+            await fileClient.CreateAsync(fileStream.Length);
+            return await fileClient.UploadRangeAsync(
+                new Azure.HttpRange(0, fileStream.Length),
+                fileStream
+            );
+        }
 
-		public async Task<Stream?> DownloadFileAsync(string shareName, string filePath)
+        public async Task<Stream?> DownloadFileAsync(string shareName, string filePath)
         {
             ShareClient shareClient = new ShareClient(_connectionString, shareName);
             await shareClient.CreateIfNotExistsAsync();
@@ -90,7 +90,7 @@ namespace CloudServiceTest
         {
             ShareClient shareClient = new ShareClient(_connectionString, shareName);
 
-            if(!await shareClient.ExistsAsync())
+            if (!await shareClient.ExistsAsync())
             {
                 return false;
             }
@@ -100,7 +100,7 @@ namespace CloudServiceTest
 
             // 上传文件
             var response = await fileClient.DeleteAsync();
-            if(response.IsError)
+            if (response.IsError)
             {
                 return false;
             }
@@ -110,83 +110,98 @@ namespace CloudServiceTest
             }
         }
 
-		public async Task<bool> UploadFileAsBlobAsync(string containerName, string blobName, Stream fileStream)
-		{
-			var blobServiceClient = new BlobServiceClient(_connectionString);
-			var containerClient = blobServiceClient.GetBlobContainerClient(containerName);
-			await containerClient.CreateIfNotExistsAsync();
-    
+        public async Task<bool> UploadFileAsBlobAsync(string containerName, string blobName, Stream fileStream)
+        {
+            var blobServiceClient = new BlobServiceClient(_connectionString);
+            var containerClient = blobServiceClient.GetBlobContainerClient(containerName);
+            await containerClient.CreateIfNotExistsAsync();
+
             var blockBlobClient = containerClient.GetBlockBlobClient(blobName);
 
-			long fileLength = fileStream.Length;
+            long fileLength = fileStream.Length;
 
-			const int blockSize = 4 * 1024 * 1024; // 4MB
-			var blockList = new List<string>(); 
+            const int blockSize = 4 * 1024 * 1024; // 4MB
+            var blockList = new List<string>();
 
-			byte[] buffer = new byte[blockSize];
-			int bytesRead;
-			int blockIdCounter = 0;
+            byte[] buffer = new byte[blockSize];
+            int bytesRead;
+            int blockIdCounter = 0;
 
-			while ((bytesRead = await fileStream.ReadAsync(buffer, 0, blockSize)) > 0)
-			{
-				// 生成一个基于块的唯一标识符（必须是 base64 编码）
-				string blockId = Convert.ToBase64String(BitConverter.GetBytes(blockIdCounter));
+            while ((bytesRead = await fileStream.ReadAsync(buffer, 0, blockSize)) > 0)
+            {
+                // 生成一个基于块的唯一标识符（必须是 base64 编码）
+                string blockId = Convert.ToBase64String(BitConverter.GetBytes(blockIdCounter));
 
-				// 将块上传到 Blob 存储
-				using (var stream = new MemoryStream(buffer, 0, bytesRead))
-				{
-					await blockBlobClient.StageBlockAsync(blockId, stream);
-				}
+                // 将块上传到 Blob 存储
+                using (var stream = new MemoryStream(buffer, 0, bytesRead))
+                {
+                    await blockBlobClient.StageBlockAsync(blockId, stream);
+                }
 
-				blockList.Add(blockId);
-				blockIdCounter++;
-			}
+                blockList.Add(blockId);
+                blockIdCounter++;
+            }
 
-			// 合并所有块
-			await blockBlobClient.CommitBlockListAsync(blockList);
+            // 合并所有块
+            await blockBlobClient.CommitBlockListAsync(blockList);
 
-			Console.WriteLine($"Blob File uploaded and merged successfully: {blobName}");
+            Console.WriteLine($"Blob File uploaded and merged successfully: {blobName}");
             return true;
-		}
+        }
 
         public async Task<bool> DeleteFileAsBlobAsync(string containerName, string blobName)
         {
             try
             {
-				var blobServiceClient = new BlobServiceClient(_connectionString);
-				var containerClient = blobServiceClient.GetBlobContainerClient(containerName);
-				await containerClient.CreateIfNotExistsAsync();
+                var blobServiceClient = new BlobServiceClient(_connectionString);
+                var containerClient = blobServiceClient.GetBlobContainerClient(containerName);
+                await containerClient.CreateIfNotExistsAsync();
 
-				var blockBlobClient = containerClient.GetBlockBlobClient(blobName);
+                var blockBlobClient = containerClient.GetBlockBlobClient(blobName);
 
-				var result = await blockBlobClient.DeleteAsync();
-				if(result.IsError)
+                var result = await blockBlobClient.DeleteAsync();
+                if (result.IsError)
                 {
-					Console.WriteLine(result.Content);
-					return false;
-				}
-			}
-            catch (Exception ex) 
-            { 
+                    Console.WriteLine(result.Content);
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
                 Console.WriteLine(ex.Message);
                 return false;
             }
 
 
-			Console.WriteLine($"Blob File deleted successfully: {blobName}");
-			return true;
-		}
+            Console.WriteLine($"Blob File deleted successfully: {blobName}");
+            return true;
+        }
 
         public string? GetStreamingVideoURL(string containerName, string blobName)
         {
-			var blobServiceClient = new BlobServiceClient(_connectionString);
-			var containerClient = blobServiceClient.GetBlobContainerClient(containerName);
-			var blobClient = containerClient.GetBlobClient(blobName);
+            var blobServiceClient = new BlobServiceClient(_connectionString);
+            var containerClient = blobServiceClient.GetBlobContainerClient(containerName);
+            var blobClient = containerClient.GetBlobClient(blobName);
 
-			var sasUri = blobClient.GenerateSasUri(BlobSasPermissions.Read, DateTimeOffset.UtcNow.AddHours(1));
+            var sasUri = blobClient.GenerateSasUri(BlobSasPermissions.Read, DateTimeOffset.UtcNow.AddHours(1));
 
-			return sasUri?.ToString();
-		}
+            return sasUri?.ToString();
+        }
 
-	}
+        public async Task<Stream?> DownloadBlobFileAsync(string containerName, string blobName)
+        {
+            var blobServiceClient = new BlobServiceClient(_connectionString);
+            var containerClient = blobServiceClient.GetBlobContainerClient(containerName);
+            var blobClient = containerClient.GetBlobClient(blobName);
+
+            if (!await blobClient.ExistsAsync())
+            {
+                return null;
+            }
+
+            var response = await blobClient.DownloadAsync();
+
+            return response.Value.Content;
+        }
+    }
 }

@@ -24,7 +24,7 @@ namespace CloudServiceTest.Controllers
 			_databaseService = databaseService;
 			_fileStorageService = fileStorageService;
 
-			if(s_defaultThumbnailSrc == null)
+			if (s_defaultThumbnailSrc == null)
 			{
 				var bytes = System.IO.File.ReadAllBytes(hostingEnvironment.WebRootPath + "/resource/texture_cantFindThum.png");
 				var base64String = Convert.ToBase64String(bytes);
@@ -41,16 +41,35 @@ namespace CloudServiceTest.Controllers
 
 			VideoViewModel model = new VideoViewModel();
 			model.videos = new List<VideoInfo>();
-			foreach(var record in records)
+			foreach (var record in records)
 			{
 				string tumbSrc = null;
-				if(string.IsNullOrEmpty(record.Thumbnail))
+				if (string.IsNullOrEmpty(record.Thumbnail))
 				{
 					tumbSrc = s_defaultThumbnailSrc;
 				}
 				else
 				{
+					var thumbStream = await _fileStorageService.DownloadBlobFileAsync(_videoShareFolder, record.Thumbnail);
 
+					if (thumbStream == null)
+					{
+						tumbSrc = s_defaultThumbnailSrc;
+					}
+					else
+					{
+						using (var memoryStream = new MemoryStream())
+						{
+							thumbStream.CopyTo(memoryStream);
+							var imageBytes = memoryStream.ToArray();
+							var base64String = Convert.ToBase64String(imageBytes);
+
+							string mimeType = "application/octet-stream";
+
+							tumbSrc = $"data:{mimeType};base64,{base64String}";
+
+						}
+					}
 				}
 
 				model.videos.Add(new VideoInfo()
@@ -64,7 +83,7 @@ namespace CloudServiceTest.Controllers
 
 
 			}
-			return View("Video",model);
+			return View("Video", model);
 		}
 
 		public IActionResult VideoStreaming(string guid, string name, string type)
@@ -78,12 +97,12 @@ namespace CloudServiceTest.Controllers
 
 		public async Task<IActionResult> DeleteVideo(string guid)
 		{
-			if(string.IsNullOrWhiteSpace(guid))
+			if (string.IsNullOrWhiteSpace(guid))
 			{
 				return NoContent();
 			}
 
-			if(await _fileStorageService.DeleteFileAsBlobAsync(_videoShareFolder, guid))
+			if (await _fileStorageService.DeleteFileAsBlobAsync(_videoShareFolder, guid))
 			{
 				await _databaseService.Context.VideoRecords.Where(fr => fr.Id == Guid.Parse(guid)).ExecuteDeleteAsync();
 			}
@@ -93,7 +112,7 @@ namespace CloudServiceTest.Controllers
 
 
 		[HttpPost]
-		public async Task<IActionResult> UploadFile(IFormFile file)
+		public async Task<IActionResult> UploadFile(IFormFile file, IFormFile thumbnail)
 		{
 			if (file == null || string.IsNullOrEmpty(file.FileName))
 			{
@@ -108,7 +127,12 @@ namespace CloudServiceTest.Controllers
 			}
 
 			var guid = Guid.NewGuid();
-			var thumbnailGuid = Guid.NewGuid();
+			Guid thumbnailGuid = Guid.Empty;
+			if (thumbnail != null)
+			{
+				thumbnailGuid = Guid.NewGuid();
+			}
+
 
 			var newFile = new VideoRecord
 			{
@@ -120,7 +144,8 @@ namespace CloudServiceTest.Controllers
 				Tag = "",
 				State = "Pending",
 				ChunkCount = 1,
-				VideoType = file.ContentType.ToLower()
+				VideoType = file.ContentType.ToLower(),
+				Thumbnail = thumbnailGuid == Guid.Empty ? null : thumbnailGuid.ToString()
 			};
 			var dbContext = _databaseService.Context;
 
@@ -139,6 +164,19 @@ namespace CloudServiceTest.Controllers
 						isSuccess = await _fileStorageService.UploadFileAsBlobAsync(_videoShareFolder, updateName, stream);
 					}
 
+				}
+
+				if (thumbnail != null)
+				{
+					using (var stream = thumbnail.OpenReadStream())
+					{
+						if (saveResult == 1)
+						{
+							var updateName = thumbnailGuid.ToString();
+							isSuccess = await _fileStorageService.UploadFileAsBlobAsync(_videoShareFolder, updateName, stream);
+						}
+
+					}
 				}
 			}
 			catch (Exception ex)
