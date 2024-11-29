@@ -5,7 +5,7 @@ namespace CloudServiceTest.Controllers
 {
 	public class AIController : Controller
 	{
-		public IActionResult AIPage()
+		public IActionResult AI()
 		{
 			AIService.Test();
 

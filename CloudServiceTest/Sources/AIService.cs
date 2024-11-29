@@ -48,8 +48,8 @@ namespace CloudServiceTest.Sources
 			var mlContext = new MLContext();
 
 			var pipeline = mlContext.Transforms.Conversion.MapValueToKey("Label")
-				.Append(mlContext.Model.LoadTensorFlowModel("saved_model.pb")
-					.ScoreTensorFlowModel("dense_2/Softmax", "conv2d_input"));
+				.Append(mlContext.Model.LoadTensorFlowModel("AIModels/SSD_MobileNet/frozen_model.pb")
+					.ScoreTensorFlowModel("Identity:0", "input_tensor:0"));
 		}
 
 		public static ImagePrediction PredictImage(Bitmap image, MLContext mlContext, ITransformer model)
