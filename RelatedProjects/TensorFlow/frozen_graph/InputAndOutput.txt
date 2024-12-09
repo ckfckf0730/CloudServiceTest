@@ -1,3 +1,6 @@
+SSD MobileNet v2
+
+
 输入张量： input_tensor:0
 输入张量： unknown:0
 输入张量： unknown_0:0
@@ -17,3 +20,19 @@
 输出张量： Identity_5:0
 输出张量： Identity_6:0
 输出张量： Identity_7:0
+
+320x320
+
+
+=== 输入张量 ===
+名称: input_tensor, 形状: (1, None, None, 3), 类型: <dtype: 'uint8'>
+=== 输出张量 ===
+名称: raw_detection_boxes, 形状: (1, 1917, 4), 类型: <dtype: 'float32'>
+名称: detection_multiclass_scores, 形状: (1, 100, 91), 类型: <dtype: 'float32'>
+名称: detection_classes, 形状: (1, 100), 类型: <dtype: 'float32'>
+名称: detection_boxes, 形状: (1, 100, 4), 类型: <dtype: 'float32'>
+名称: raw_detection_scores, 形状: (1, 1917, 91), 类型: <dtype: 'float32'>
+名称: num_detections, 形状: (1,), 类型: <dtype: 'float32'>
+名称: detection_anchor_indices, 形状: (1, 100), 类型: <dtype: 'float32'>
+名称: detection_scores, 形状: (1, 100), 类型: <dtype: 'float32'>
+

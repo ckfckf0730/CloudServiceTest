@@ -138,3 +138,19 @@ AzureのBlob機能を使うと、この部分はもっと簡単です。<br>
 ![describe1](https://github.com/ckfckf0730/CloudServiceTest/blob/main/readme/VideoStreaming.gif)<br>
 <br>
 <br>
+***
+Asp.net coreウェブサーバーに接続するAndroid Appの開発：<br>
+<br>
+Asp.net coreの基本開発技術は大体身に着けました。<br>
+次はJavaとAndroidの開発学習したいんです。<br>
+Asp.net coreがブラウザとApp両方互換性すると、つまりマルチプラットフォーム開発は技術の向上に良いと思います。<br>
+そしてAndroid StudioでAndroidのプロジェクト構築しました。<br>
+Github Url: https://github.com/ckfckf0730/AndroidApp<br>
+<br>
+最初はAndroid studioのプロジェクトの構造を理解して、ウェブサーバーのHttpの接続方法勉強します。<br>
+httpsのウェブサイトはセキュリティ証明書が必要で、勉強用のプロジェクトは証明書がないので、まずそのセキュリティを排除も必要です。<br>
+<br>
+接続成功したら、デフォルトページのHTMLデータがもらえます。<br>
+![describe1](https://github.com/ckfckf0730/CloudServiceTest/blob/main/readme/AndroidApp01.png)<br>
+<br>
+<br>

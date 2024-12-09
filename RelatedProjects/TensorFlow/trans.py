@@ -11,13 +11,18 @@ model = tf.saved_model.load(saved_model_dir)
 # 获取模型的默认输入输出签名
 infer = model.signatures["serving_default"]
 
-# 查看输入和输出
-for input_tensor in infer.inputs:
-    print("输入张量：", input_tensor.name)
+# print("默认张量：", model.signatures['serving_default'])
+    
+# 查看输入张量的名称、形状和类型
+print("=== 输入张量 ===")
+for input_name, tensor in infer.structured_input_signature[1].items():
+    print(f"名称: {input_name}, 形状: {tensor.shape}, 类型: {tensor.dtype}")
 
-for output_tensor in infer.outputs:
-    print("输出张量：", output_tensor.name)
-
+# 查看输出张量的名称、形状和类型
+print("=== 输出张量 ===")
+for output_name, tensor in infer.structured_outputs.items():
+    print(f"名称: {output_name}, 形状: {tensor.shape}, 类型: {tensor.dtype}")
+        
 # 获取计算图
 graph_def = infer.graph.as_graph_def()
 
