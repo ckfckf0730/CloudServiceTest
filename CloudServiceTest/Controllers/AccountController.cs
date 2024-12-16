@@ -148,33 +148,15 @@ namespace CloudServiceTest.Controllers
 
 				if (result.Succeeded)
 				{
-					var cookies = HttpContext.Response.Headers["Set-Cookie"];
-
 					return Ok(new
 					{
 						Message = "Login successful",
-						Cookies = cookies.ToList(),
 						User = new
 						{
 							model.Email
 						}
 					});
 
-					var user = await _userManager.GetUserAsync(User);
-					if (!await _userManager.IsEmailConfirmedAsync(user))
-					{
-						var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-						var confirmationLink = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, token = token }, Request.Scheme);
-
-						// Send e-mail to comfirm regist
-						await _emailSender.SendEmailAsync(model.Email, "Confirm your email",
-							$"Please confirm your account by clicking this link: <a href='{confirmationLink}'>link</a>");
-
-						await _signInManager.SignInAsync(user, isPersistent: false);
-						var successModel = new RegisterResultViewModel { Message = "Regist Successfully！ You will receive a confirm e-mail, please check." };
-					}
-
-					return RedirectToAction("Index", "Home");
 				}
 
 				ModelState.AddModelError(string.Empty, "Invalid login attempt.");

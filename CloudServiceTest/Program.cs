@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity;
 using CloudServiceTest.Models;
 using CloudServiceTest.Data;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,6 +38,18 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 	.AddEntityFrameworkStores<ApplicationDbContext>()
 	.AddDefaultTokenProviders()
 	.AddRoles<IdentityRole>();
+
+//set cookie configure
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+			.AddCookie(options =>
+			{
+				options.LoginPath = "/Account/LoginAndroid"; 
+				options.LogoutPath = "/Account/Logout"; 
+				options.ExpireTimeSpan = TimeSpan.FromMinutes(30); // cookie过期时间
+				options.SlidingExpiration = true; // 启用滑动过期
+			});
+
+builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
