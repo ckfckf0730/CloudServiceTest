@@ -139,6 +139,32 @@ namespace CloudServiceTest.Controllers
             return View(model);
         }
 
+		[HttpGet]
+		public async Task<IActionResult> GetUserName()
+		{
+            bool isLogin;
+			string userName;
+            isLogin = IsLogin(out userName);
+
+            return Ok(new
+            {
+                islogin = isLogin,
+                name = userName
+            });
+		}
+
+		private bool IsLogin(out string userName)
+		{
+			if (!_signInManager.IsSignedIn(HttpContext.User))
+			{
+				userName = string.Empty;
+				return false;
+			}
+
+			userName = _userManager.GetUserName(User) ?? string.Empty;
+			return true;
+		}
+
 		[HttpPost]
 		public async Task<IActionResult> LoginAndroid(LoginViewModel model)
 		{

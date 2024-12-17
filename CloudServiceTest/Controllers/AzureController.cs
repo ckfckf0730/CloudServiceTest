@@ -135,9 +135,7 @@ public class AzureController : Controller
 		yield break;
 	}
 
-
-
-    private Stream? DownLoadFromAzure(string azureName)
+	private Stream? DownLoadFromAzure(string azureName)
     {
         return _fileStorageService.DownloadFileAsync(_azureShareFolder, azureName).Result;
     }
