@@ -134,24 +134,46 @@ UnityのSceneデータによって、同じ現場が作られます。<br>
 まずAzureのshare folderが一つのファイル4M以下しかアップロードできません。<br>
 大きい動画ファイルをいくつ分割、share folderに送るのはできるが、<br>
 AzureのBlob機能を使うと、この部分はもっと簡単です。<br>
-最後Azureにアップロードした動画のSasUriを求めて、Htmlのvideoコンポーネント直接放送できます。
+最後Azureにアップロードした動画のSasUriを求めて、Htmlの"video"コンポーネント直接放送できます。
 ![describe1](https://github.com/ckfckf0730/CloudServiceTest/blob/main/readme/VideoStreaming.gif)<br>
 <br>
 <br>
 ***
-Asp.net coreウェブサーバーに接続するAndroid Appの開発：<br>
+ASP.NET Coreウェブサーバーに接続するAndroid Appの開発：<br>
 <br>
 ASP.NET Coreの基本的な開発技術は大体身に付けました。<br>
 次はJavaとAndroidの開発を学びたいと思います。<br>
-
+<br>
 ASP.NET Coreはブラウザとアプリの両方に対応しているため、マルチプラットフォーム開発は技術向上に役立つと考えています。<br>
 そして、Android StudioでAndroidプロジェクトを構築しました。<br>
 GitHub URL: https://github.com/ckfckf0730/AndroidApp<br>
-
+<br>
 最初はAndroid Studioのプロジェクト構造を理解し、ウェブサーバーとのHTTP接続方法を学びます。<br>
 HTTPSのウェブサイトではセキュリティ証明書が必要ですが、勉強用のプロジェクトには証明書がないため、まずそのセキュリティを無効にする必要があります。<br>
-
+<br>
 接続に成功したら、デフォルトページのHTMLデータが取得できます。<br>
 ![describe1](https://github.com/ckfckf0730/CloudServiceTest/blob/main/readme/AndroidApp01.png)<br>
 <br>
 <br>
+***
+Android AppのCookie処理：<br>
+<br>
+ASP.NET Coreのフレームワークは、サーバーとウェブページの間で、Cookieの通信と記録を自動的、暗黙的に処理しました。<br>
+でもAndroid Appは自動的にCookieの処理できません。<br>
+<br>
+まず、サーバーの方がAndroidのCookie設置しなければならない。<br>
+![describe1](https://github.com/ckfckf0730/CloudServiceTest/blob/main/readme/SetCookie.png)<br>
+<br>
+そして、okhttp3.CookieJar関するライブラリを使って、Cookieの受け、使い、保存をかんせいしました。<br>
+<br>
+<br>
+***
+Azureの画像アップロード、画像のリストの観覧、削除：<br>
+<br>
+ASP.NET CoreのIDEは一部のHttp操作を簡略化しました。<br>
+例え、HTMLの"form"コンポーネントがHttpPostリクエストを適切にラップし、サーバーに自動的に送信することができます。
+Android Appは自らそのリクエストをしょりしなければできません。
+そしてAndroid Studioの仕組みを勉強しながら、Httpプロトコルもっと深く学んでいます。<br>
+<br>
+今Azureの画像の機能関するActiviyを完成しました。<br>
+![describe1](https://github.com/ckfckf0730/CloudServiceTest/blob/main/readme/AndroidApp01.gif)<br>
